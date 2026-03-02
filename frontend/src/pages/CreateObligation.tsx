@@ -43,7 +43,7 @@ const CreateObligation: React.FC = () => {
   const loadUsers = async (): Promise<void> => {
     try {
       const response = await usersAPI.list();
-      setUsers(response.data.users);
+      setUsers(response.data.data || []);
     } catch (err) {
       setError('Failed to load users');
     }
@@ -98,8 +98,15 @@ const CreateObligation: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await obligationsAPI.create(formData);
-      navigate(`/obligations/${response.data.obligation.id}`);
+      const obligationData: any = {
+        title: formData.title,
+        description: formData.description,
+        ownerId: formData.ownerId,
+        dueDate: formData.slaDueDate,
+        regulationTag: formData.regulationTag
+      };
+      const response = await obligationsAPI.create(obligationData);
+      navigate(`/obligations/${response.data.data?.id}`);
     } catch (err: any) {
       if (err.response?.data?.violations) {
         setViolations(err.response.data.violations);

@@ -10,6 +10,7 @@ import evidenceRoutes from './evidence';
 import exportRoutes from './export';
 import usersRoutes from './users';
 import alertsRoutes from './alerts';
+import ingestionRoutes from './ingestion';
 
 export {
   authRoutes,
@@ -18,5 +19,6 @@ export {
   evidenceRoutes,
   exportRoutes,
   usersRoutes,
-  alertsRoutes
+  alertsRoutes,
+  ingestionRoutes
 };

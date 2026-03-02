@@ -2,6 +2,7 @@
 // DATABASE MIGRATION SCRIPT
 // ============================================
 // Run this to apply the schema to PostgreSQL
+// Handles existing tables gracefully with IF NOT EXISTS
 
 import { Pool } from 'pg';
 import fs from 'fs';
@@ -15,55 +16,108 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
+// Migration tracking table
+async function ensureMigrationTable(): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS _migrations (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    )
+  `);
+}
+
+async function hasMigrationRun(name: string): Promise<boolean> {
+  const result = await pool.query(
+    'SELECT 1 FROM _migrations WHERE name = $1',
+    [name]
+  );
+  return result.rows.length > 0;
+}
+
+async function recordMigration(name: string): Promise<void> {
+  await pool.query(
+    'INSERT INTO _migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING',
+    [name]
+  );
+}
+
 async function migrate(): Promise<void> {
   console.log('Starting database migration...');
+  console.log('');
   
   try {
-    // Run all migrations in order
-    const migrations = [
-      '001_initial_schema.sql',
-      '002_password_security.sql'
-    ];
+    // Ensure migration tracking table exists
+    await ensureMigrationTable();
     
-    for (const migrationFile of migrations) {
-      console.log(`Running migration: ${migrationFile}...`);
-      const migrationPath = path.join(__dirname, '../../migrations', migrationFile);
+    // Get all migration files in order
+    const migrationsDir = path.join(__dirname, '../../migrations');
+    const allFiles = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.sql'))
+      .sort();
+    
+    console.log(`Found ${allFiles.length} migration files`);
+    console.log('');
+    
+    let applied = 0;
+    let skipped = 0;
+    
+    for (const migrationFile of allFiles) {
+      const alreadyRun = await hasMigrationRun(migrationFile);
+      
+      if (alreadyRun) {
+        console.log(`[SKIP] ${migrationFile} (already applied)`);
+        skipped++;
+        continue;
+      }
+      
+      console.log(`[RUN]  ${migrationFile}...`);
+      const migrationPath = path.join(migrationsDir, migrationFile);
       const sql = fs.readFileSync(migrationPath, 'utf8');
-      await pool.query(sql);
-      console.log(`${migrationFile} completed`);
+      
+      try {
+        await pool.query(sql);
+        await recordMigration(migrationFile);
+        console.log(`       ✓ Completed`);
+        applied++;
+      } catch (err: any) {
+        // Handle "already exists" errors gracefully
+        if (err.code === '42P07' || err.message.includes('already exists')) {
+          console.log(`       ⚠ Tables already exist, marking as applied`);
+          await recordMigration(migrationFile);
+          skipped++;
+        } else {
+          throw err;
+        }
+      }
     }
     
     console.log('');
+    console.log('════════════════════════════════════════');
     console.log('Migration completed successfully!');
+    console.log(`  Applied: ${applied} new migrations`);
+    console.log(`  Skipped: ${skipped} (already applied)`);
+    console.log('════════════════════════════════════════');
     console.log('');
-    console.log('Database tables created:');
-    console.log('  - organizations');
-    console.log('  - users');
-    console.log('  - obligations');
-    console.log('  - obligation_owners');
-    console.log('  - slas');
-    console.log('  - evidence');
-    console.log('  - audit_logs');
-    console.log('');
-    console.log('Enforcement triggers installed:');
-    console.log('  - trg_prevent_obligation_delete');
-    console.log('  - trg_obligation_created_at_immutable');
-    console.log('  - trg_prevent_owner_delete');
-    console.log('  - trg_owner_assigned_at_immutable');
-    console.log('  - trg_prevent_sla_delete');
-    console.log('  - trg_sla_immutable');
-    console.log('  - trg_prevent_evidence_delete');
-    console.log('  - trg_evidence_immutable');
-    console.log('  - trg_check_evidence_late');
-    console.log('  - trg_audit_log_immutable');
-    console.log('');
-    console.log('Password security features:');
-    console.log('  - Password expiry (90 days)');
-    console.log('  - Password history tracking');
-    console.log('  - Account lockout after failed attempts');
+    
+    if (applied > 0) {
+      console.log('Database tables available:');
+      console.log('  - organizations');
+      console.log('  - users');
+      console.log('  - obligations');
+      console.log('  - obligation_owners');
+      console.log('  - slas');
+      console.log('  - evidence');
+      console.log('  - audit_logs');
+      console.log('  - ingestion_logs');
+      console.log('  - api_keys');
+      console.log('  - whatsapp_mappings');
+    }
     
   } catch (error: any) {
+    console.error('');
     console.error('Migration failed:', error.message);
+    if (error.detail) console.error('Detail:', error.detail);
     process.exit(1);
   } finally {
     await pool.end();

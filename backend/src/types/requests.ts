@@ -71,9 +71,16 @@ export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     email: string;
+    name: string;
     role: string;
     organization_id: string;
+    organizationId?: string;
+    is_active: boolean;
+    organization_name?: string;
+    organization_type?: string;
   };
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 // Response Types

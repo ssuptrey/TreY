@@ -16,8 +16,18 @@ dotenv.config();
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'path';
 import rateLimit from 'express-rate-limit';
+
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  // Don't exit - keep server running
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit - keep server running
+});
 
 // Import routes (will be converted to TypeScript)
 import authRoutes from './routes/auth';
@@ -27,6 +37,9 @@ import evidenceRoutes from './routes/evidence';
 import exportRoutes from './routes/export';
 import usersRoutes from './routes/users';
 import alertsRoutes from './routes/alerts';
+import organizationsRoutes from './routes/organizations';
+import auditRoutes from './routes/audit';
+import ingestionRoutes from './routes/ingestion';
 
 // Import cron jobs
 import { startSLAAlertJob } from './jobs/slaAlertJob';
@@ -42,9 +55,10 @@ app.use(cors({
 }));
 
 // Rate limiting - Per rulebook: 100 req / 15 min general, 5 req / 15 min auth
+// Increased for demo mode with auto-refresh
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 1000, // Increased for demo auto-refresh (was 100)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -52,7 +66,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per windowMs
+  max: 50, // Increased for demo (was 5) - Limit each IP to 50 login attempts per windowMs
   message: 'Too many login attempts, please try again later.',
   skipSuccessfulRequests: true,
 });
@@ -89,6 +103,9 @@ app.use('/api/evidence', evidenceRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/alerts', alertsRoutes);
+app.use('/api/organizations', organizationsRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/ingestion', ingestionRoutes);
 
 // Error handling middleware
 interface ErrorWithMessage extends Error {

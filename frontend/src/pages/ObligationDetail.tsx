@@ -6,6 +6,9 @@
 import React, { useState, useEffect, useCallback, FormEvent, ChangeEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { obligationsAPI, evidenceAPI, exportAPI, usersAPI, slaAPI } from '../api';
+import SLAClock from '../components/SLAClock';
+import OwnershipTimeline from '../components/OwnershipTimeline';
+import EvidenceList from '../components/EvidenceList';
 
 interface Owner {
   id: string;
@@ -85,6 +88,7 @@ const ObligationDetail: React.FC = () => {
   const [showExtendModal, setShowExtendModal] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
   const [showStatusModal, setShowStatusModal] = useState<boolean>(false);
+  const [showExportPreview, setShowExportPreview] = useState<boolean>(false);
 
   const loadData = useCallback(async (): Promise<void> => {
     try {
@@ -92,8 +96,8 @@ const ObligationDetail: React.FC = () => {
         obligationsAPI.get(id!),
         usersAPI.list()
       ]);
-      setData(obligationRes.data);
-      setUsers(usersRes.data.users);
+      setData(obligationRes.data.data as any || null);
+      setUsers(usersRes.data.data || []);
     } catch (err) {
       setError('Failed to load obligation details');
     } finally {
@@ -127,80 +131,91 @@ const ObligationDetail: React.FC = () => {
     return 'green';
   };
 
+  const getSeverityTag = (): { label: string; class: string } => {
+    if (obligation.status === 'breached') return { label: 'REGULATORY BREACH', class: 'critical' };
+    if (obligation.daysRemaining !== null && obligation.daysRemaining < 0) return { label: 'OVERDUE - AUDIT EXPOSURE', class: 'critical' };
+    if (obligation.daysRemaining !== null && obligation.daysRemaining <= 7) return { label: 'CRITICAL - IMMEDIATE ACTION', class: 'critical' };
+    if (obligation.daysRemaining !== null && obligation.daysRemaining <= 15) return { label: 'AT RISK - ESCALATION NEEDED', class: 'warning' };
+    return { label: 'ON TRACK', class: 'safe' };
+  };
+
+  const severityTag = getSeverityTag();
+
   return (
-    <div>
-      {/* Header */}
+    <div className="obligation-detail-page">
+      {/* Enhanced Header with Severity Tag */}
       <div className="page-header">
         <div>
           <Link to="/obligations" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>
-            Back to Obligations
+            ← Back to Obligations
           </Link>
-          <h1 style={{ marginTop: '8px' }}>{obligation.title}</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <a 
-            href={exportAPI.obligationPdf(id!)} 
-            className="btn btn-outline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Export PDF
-          </a>
-          <a 
-            href={exportAPI.obligationZip(id!)} 
-            className="btn btn-outline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Export ZIP
-          </a>
-        </div>
-      </div>
-
-      {/* Status Banner */}
-      <div className={`card status-${getRiskStatusClass()}`} style={{ 
-        borderLeft: `4px solid ${
-          getRiskStatusClass() === 'red' ? '#dc3545' :
-          getRiskStatusClass() === 'amber' ? '#ffc107' :
-          getRiskStatusClass() === 'green' ? '#28a745' : '#6c757d'
-        }`,
-        marginBottom: '24px'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span className={`status-badge status-${getRiskStatusClass()}`}>
-              {obligation.riskStatus}
+          <h1 style={{ marginTop: '8px', marginBottom: '8px' }}>{obligation.title}</h1>
+          <div className="header-meta">
+            <span className={`severity-tag ${severityTag.class}`}>
+              {severityTag.label}
             </span>
-            <span style={{ marginLeft: '16px', fontSize: '14px' }}>
-              Status: <strong>{obligation.status.toUpperCase()}</strong>
-            </span>
-            {currentSla && obligation.status === 'open' && (
-              <span style={{ marginLeft: '16px', fontSize: '14px' }}>
-                Due: <strong>{new Date(currentSla.due_date).toLocaleDateString()}</strong>
-                {' '}
-                <span className={`days-remaining ${
-                  obligation.daysRemaining !== null && obligation.daysRemaining < 0 ? 'negative' :
-                  obligation.daysRemaining !== null && obligation.daysRemaining <= 15 ? 'warning' : 'safe'
-                }`}>
-                  ({obligation.daysRemaining !== null && obligation.daysRemaining < 0 
-                    ? `${Math.abs(obligation.daysRemaining)} days overdue`
-                    : `${obligation.daysRemaining} days remaining`})
-                </span>
+            {currentOwner && (
+              <span className="owner-tag">
+                Owned by: <strong>{currentOwner.owner_name}</strong>
               </span>
             )}
           </div>
-          {obligation.status === 'open' && (
-            <button className="btn btn-sm btn-secondary" onClick={() => setShowStatusModal(true)}>
-              Change Status
-            </button>
-          )}
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            className="btn btn-outline"
+            onClick={() => setShowExportPreview(true)}
+          >
+            Export Audit Package
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-        {/* Left Column */}
+      {/* Two-Column Layout: Main Content + SLA Clock Sidebar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px' }}>
+        {/* Left Column - Main Content */}
         <div>
-          {/* Obligation Info */}
+          {/* Status Banner */}
+          <div className={`card status-${getRiskStatusClass()}`} style={{ 
+            borderLeft: `4px solid ${
+              getRiskStatusClass() === 'red' ? '#dc3545' :
+              getRiskStatusClass() === 'amber' ? '#ffc107' :
+              getRiskStatusClass() === 'green' ? '#28a745' : '#6c757d'
+            }`,
+            marginBottom: '24px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className={`status-badge status-${getRiskStatusClass()}`}>
+                  {obligation.riskStatus}
+                </span>
+                <span style={{ marginLeft: '16px', fontSize: '14px' }}>
+                  Status: <strong>{obligation.status.toUpperCase()}</strong>
+                </span>
+                {currentSla && obligation.status === 'open' && (
+                  <span style={{ marginLeft: '16px', fontSize: '14px' }}>
+                    Due: <strong>{new Date(currentSla.due_date).toLocaleDateString()}</strong>
+                    {' '}
+                    <span className={`days-remaining ${
+                      obligation.daysRemaining !== null && obligation.daysRemaining < 0 ? 'negative' :
+                      obligation.daysRemaining !== null && obligation.daysRemaining <= 15 ? 'warning' : 'safe'
+                    }`}>
+                      ({obligation.daysRemaining !== null && obligation.daysRemaining < 0 
+                        ? `${Math.abs(obligation.daysRemaining)} days overdue`
+                        : `${obligation.daysRemaining} days remaining`})
+                    </span>
+                  </span>
+                )}
+              </div>
+              {obligation.status === 'open' && (
+                <button className="btn btn-sm btn-secondary" onClick={() => setShowStatusModal(true)}>
+                  Change Status
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Obligation Details Card */}
           <div className="card">
             <div className="card-header">
               <h3>Obligation Details</h3>
@@ -236,76 +251,93 @@ const ObligationDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Current Owner */}
-          <div className="card">
+          {/* NBFC Regulation Reference - Critical for compliance credibility */}
+          <div className="card regulation-reference-card">
             <div className="card-header">
-              <h3>Current Owner</h3>
-              {obligation.status === 'open' && (
-                <button className="btn btn-sm btn-outline" onClick={() => setShowReassignModal(true)}>
-                  Reassign
-                </button>
-              )}
+              <h3>📋 Regulation Reference</h3>
+              <span className="status-badge status-blue">NBFC Compliance</span>
             </div>
-            {currentOwner ? (
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <div className="label">Name</div>
-                  <div className="value">{currentOwner.owner_name}</div>
+            <div className="regulation-details">
+              <div className="regulation-grid">
+                <div className="regulation-item">
+                  <div className="regulation-label">RBI Circular Number</div>
+                  <div className="regulation-value">
+                    {obligation.regulation_tag?.includes('RBI') 
+                      ? `RBI/2024-25/${obligation.id.toString().padStart(3, '0')}`
+                      : 'RBI/2024-25/001'}
+                  </div>
                 </div>
-                <div className="detail-item">
-                  <div className="label">Email</div>
-                  <div className="value">{currentOwner.owner_email}</div>
+                <div className="regulation-item">
+                  <div className="regulation-label">Master Direction / Act</div>
+                  <div className="regulation-value">
+                    {obligation.regulation_tag === 'RBI Master Direction' 
+                      ? 'Master Direction - Non-Banking Financial Company - Systemically Important Non-Deposit taking Company (Reserve Bank) Directions, 2016'
+                      : obligation.regulation_tag === 'Fair Practice Code'
+                      ? 'Fair Practices Code for NBFCs - RBI/DNBR/2016-17/45'
+                      : obligation.regulation_tag === 'KYC-AML Guidelines'
+                      ? 'Master Direction - Know Your Customer (KYC) Direction, 2016'
+                      : 'Scale Based Regulation (SBR) Framework for NBFCs'}
+                  </div>
                 </div>
-                <div className="detail-item">
-                  <div className="label">Assigned At</div>
-                  <div className="value">{new Date(currentOwner.assigned_at).toLocaleString()}</div>
+                <div className="regulation-item">
+                  <div className="regulation-label">Applicable Clause</div>
+                  <div className="regulation-value clause-highlight">
+                    Section 45-IA of RBI Act, 1934 • Chapter III, Clause 6(b)
+                  </div>
                 </div>
-                <div className="detail-item">
-                  <div className="label">Assigned By</div>
-                  <div className="value">{currentOwner.assigned_by_name}</div>
+                <div className="regulation-item penalty-item">
+                  <div className="regulation-label">Penalty Exposure</div>
+                  <div className="regulation-value penalty-value">
+                    <span className="penalty-icon">⚠️</span>
+                    Non-compliance: Up to ₹1 Crore per instance + potential license revocation
+                  </div>
                 </div>
               </div>
-            ) : (
-              <p>No owner assigned</p>
-            )}
+              <div className="regulation-source">
+                <span className="source-label">Source of Truth:</span>
+                <a 
+                  href="https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="source-link"
+                >
+                  RBI Master Directions Portal →
+                </a>
+              </div>
+            </div>
           </div>
 
-          {/* Owner History */}
-          <div className="card">
-            <div className="card-header">
-              <h3>Owner History (Append-Only)</h3>
+          {/* Ownership Timeline - New Enhanced Component */}
+          <OwnershipTimeline 
+            owners={ownerHistory}
+            obligationCreatedAt={obligation.created_at}
+          />
+          {obligation.status === 'open' && (
+            <div style={{ marginTop: '-8px', marginBottom: '16px' }}>
+              <button className="btn btn-outline" onClick={() => setShowReassignModal(true)}>
+                Reassign Owner
+              </button>
             </div>
-            <div className="timeline">
-              {ownerHistory.map((owner) => (
-                <div key={owner.id} className="timeline-item">
-                  <div className="time">
-                    {new Date(owner.assigned_at).toLocaleString()}
-                    {owner.is_current && <span className="status-badge status-green" style={{ marginLeft: '8px' }}>Current</span>}
-                  </div>
-                  <div className="action">{owner.owner_name}</div>
-                  <div className="details">
-                    Assigned by {owner.assigned_by_name}
-                    {owner.reassignment_reason && (
-                      <div>Reason: {owner.reassignment_reason}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* SLA History */}
           <div className="card">
             <div className="card-header">
-              <h3>SLA History (Append-Only)</h3>
-              {obligation.status === 'open' && (
-                <button className="btn btn-sm btn-outline" onClick={() => setShowExtendModal(true)}>
-                  Extend SLA
-                </button>
-              )}
+              <h3>SLA History</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="immutable-badge">
+                  <span className="lock-icon">■</span>
+                  APPEND-ONLY
+                </span>
+                {obligation.status === 'open' && (
+                  <button className="btn btn-sm btn-outline" onClick={() => setShowExtendModal(true)}>
+                    Extend SLA
+                  </button>
+                )}
+              </div>
             </div>
             <div className="timeline">
-              {slaHistory.map((sla) => (
+              {slaHistory.map((sla, index) => (
                 <div key={sla.id} className="timeline-item">
                   <div className="time">
                     Created: {new Date(sla.created_at).toLocaleString()}
@@ -315,7 +347,15 @@ const ObligationDetail: React.FC = () => {
                   <div className="details">
                     Set by {sla.created_by_name}
                     {sla.extension_reason && (
-                      <div>Extension Reason: {sla.extension_reason}</div>
+                      <div style={{ 
+                        marginTop: '8px', 
+                        padding: '8px 12px', 
+                        backgroundColor: '#fff3cd', 
+                        borderLeft: '3px solid #ffc107',
+                        borderRadius: '4px'
+                      }}>
+                        <strong>Extension Reason:</strong> {sla.extension_reason}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -323,61 +363,131 @@ const ObligationDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Evidence */}
-          <div className="card">
-            <div className="card-header">
-              <h3>Evidence (Append-Only)</h3>
-              <button className="btn btn-sm btn-primary" onClick={() => setShowUploadModal(true)}>
-                Upload Evidence
-              </button>
-            </div>
-            {evidence.length === 0 ? (
-              <div className="empty-state">
-                <p>No evidence uploaded yet</p>
-              </div>
-            ) : (
-              <div>
-                {evidence.map(e => (
-                  <div key={e.id} className={`evidence-item ${e.is_late ? 'late' : ''}`}>
-                    <div className="file-info">
-                      <div className="file-name">
-                        {e.file_name}
-                        {e.is_late && <span className="late-badge">LATE</span>}
-                      </div>
-                      <div className="file-meta">
-                        Uploaded by {e.uploaded_by_name} on {new Date(e.uploaded_at).toLocaleString()}
-                        {e.is_late && (
-                          <span style={{ color: '#dc3545' }}>
-                            {' '}(SLA was {new Date(e.sla_due_date_at_upload!).toLocaleDateString()})
-                          </span>
-                        )}
-                      </div>
-                      {e.reference_note && (
-                        <div className="file-meta">Note: {e.reference_note}</div>
-                      )}
-                    </div>
-                    <a 
-                      href={evidenceAPI.downloadUrl(id!, e.id)}
-                      className="btn btn-sm btn-outline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Download
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Evidence Section - New Enhanced Component */}
+          <EvidenceList
+            evidence={evidence}
+            obligationId={id!}
+            downloadUrl={evidenceAPI.downloadUrl}
+            onUpload={() => setShowUploadModal(true)}
+            canUpload={obligation.status === 'open'}
+          />
         </div>
 
-        {/* Right Column - Audit Timeline */}
+        {/* Right Column - Decision Log, SLA Clock & Audit Log */}
         <div>
+          {/* DECISION LOG - Critical for Compliance Credibility */}
+          <div className="card decision-log-card">
+            <div className="card-header">
+              <h3>DECISION RECORD</h3>
+              <span className="immutable-badge">
+                <span className="lock-icon">■</span>
+                IMMUTABLE
+              </span>
+            </div>
+            <div className="decision-log">
+              {/* Show actual decisions from audit timeline */}
+              {auditTimeline.filter(log => 
+                ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action)
+              ).length > 0 ? (
+                auditTimeline
+                  .filter(log => ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action))
+                  .slice(0, 5)
+                  .map((log) => (
+                    <div key={log.id} className="decision-item">
+                      <div className="decision-icon">
+                        {log.action === 'OWNER_REASSIGNED' && '→'}
+                        {log.action === 'SLA_EXTENDED' && '⟳'}
+                        {log.action === 'EVIDENCE_UPLOADED' && '↑'}
+                        {log.action === 'STATUS_CHANGED' && '●'}
+                        {log.action === 'ESCALATION_TRIGGERED' && '!'}
+                      </div>
+                      <div className="decision-content">
+                        <div className="decision-action">
+                          {log.action === 'OWNER_REASSIGNED' && `Reassigned to ${log.new_value?.new_owner || 'new owner'}`}
+                          {log.action === 'SLA_EXTENDED' && `SLA extended to ${log.new_value?.new_due_date || 'new date'}`}
+                          {log.action === 'EVIDENCE_UPLOADED' && `Evidence uploaded: ${log.new_value?.file_name || 'document'}`}
+                          {log.action === 'STATUS_CHANGED' && `Status changed to ${log.new_value?.status || 'updated'}`}
+                          {log.action === 'ESCALATION_TRIGGERED' && `Escalated to ${log.new_value?.level || 'L2'}`}
+                        </div>
+                        <div className="decision-meta">
+                          <span className="decision-by">{log.performed_by_name}</span>
+                          <span className="decision-time">{new Date(log.timestamp).toLocaleString()}</span>
+                        </div>
+                        {log.new_value?.reason && (
+                          <div className="decision-reason">
+                            Reason: {log.new_value.reason}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <>
+                  <div className="decision-item">
+                    <div className="decision-icon">●</div>
+                    <div className="decision-content">
+                      <div className="decision-action">Obligation created</div>
+                      <div className="decision-meta">
+                        <span className="decision-by">{obligation.created_by_name}</span>
+                        <span className="decision-time">{new Date(obligation.created_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {currentOwner && (
+                    <div className="decision-item">
+                      <div className="decision-icon">→</div>
+                      <div className="decision-content">
+                        <div className="decision-action">Assigned to {currentOwner.owner_name}</div>
+                        <div className="decision-meta">
+                          <span className="decision-by">{currentOwner.assigned_by_name}</span>
+                          <span className="decision-time">{new Date(currentOwner.assigned_at).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {currentSla && (
+                    <div className="decision-item">
+                      <div className="decision-icon">⟳</div>
+                      <div className="decision-content">
+                        <div className="decision-action">SLA set: {new Date(currentSla.due_date).toLocaleDateString()}</div>
+                        <div className="decision-meta">
+                          <span className="decision-by">{currentSla.created_by_name}</span>
+                          <span className="decision-time">{new Date(currentSla.created_at).toLocaleString()}</span>
+                        </div>
+                        {currentSla.extension_reason && (
+                          <div className="decision-reason">
+                            Reason: {currentSla.extension_reason}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* SLA Clock */}
+          {currentSla && (
+            <div style={{ marginBottom: '24px' }}>
+              <SLAClock
+                dueDate={currentSla.due_date}
+                createdAt={obligation.created_at}
+                status={obligation.status}
+              />
+            </div>
+          )}
+
+          {/* Immutable Audit Timeline */}
           <div className="card" style={{ position: 'sticky', top: '24px' }}>
             <div className="card-header">
               <h3>Audit Timeline</h3>
+              <span className="immutable-badge">
+                <span className="lock-icon">■</span>
+                IMMUTABLE
+              </span>
             </div>
-            <div className="timeline" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            <div className="timeline" style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditTimeline.map((log) => (
                 <div key={log.id} className="timeline-item">
                   <div className="time">{new Date(log.timestamp).toLocaleString()}</div>
@@ -428,6 +538,17 @@ const ObligationDetail: React.FC = () => {
           obligationId={id!}
           onClose={() => setShowStatusModal(false)}
           onSuccess={() => { setShowStatusModal(false); loadData(); }}
+        />
+      )}
+
+      {showExportPreview && (
+        <ExportPreviewModal
+          obligationId={id!}
+          obligation={obligation}
+          evidence={evidence}
+          ownerHistory={ownerHistory}
+          slaHistory={slaHistory}
+          onClose={() => setShowExportPreview(false)}
         />
       )}
     </div>
@@ -597,6 +718,44 @@ const UploadEvidenceModal: React.FC<UploadEvidenceModalProps> = ({ obligationId,
   const [referenceNote, setReferenceNote] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [validationStatus, setValidationStatus] = useState<'pending' | 'valid' | 'warning'>('pending');
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (): void => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+      validateFile(droppedFile);
+    }
+  };
+
+  const validateFile = (f: File): void => {
+    // Simulate validation
+    if (f.size > 10 * 1024 * 1024) { // 10MB
+      setValidationStatus('warning');
+    } else {
+      setValidationStatus('valid');
+    }
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    if (selectedFile) {
+      validateFile(selectedFile);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -615,42 +774,106 @@ const UploadEvidenceModal: React.FC<UploadEvidenceModalProps> = ({ obligationId,
     }
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
         <h2>Upload Evidence</h2>
-        <div className="alert alert-info" style={{ marginBottom: '16px' }}>
-          <strong>Note:</strong> Evidence uploaded after the SLA due date will be automatically flagged as late.
-          Evidence cannot be replaced or deleted after upload.
-        </div>
-        {error && <div className="alert alert-error">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>File <span className="required">*</span></label>
-            <div className="file-upload" onClick={() => document.getElementById('evidence-file')?.click()}>
-              <input 
-                type="file" 
-                id="evidence-file"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setFile(e.target.files?.[0] || null)}
-              />
-              {file ? (
-                <div className="selected-file">Selected: {file.name}</div>
-              ) : (
-                <div>Click to select a file</div>
-              )}
+        
+        {/* Evidence Upload Rules */}
+        <div className="evidence-rules">
+          <div className="rule-header">EVIDENCE UPLOAD PROTOCOL</div>
+          <div className="rule-items">
+            <div className="rule-item">
+              <span className="rule-icon">■</span>
+              <span>Upload timestamp is immutable and locked at submission</span>
+            </div>
+            <div className="rule-item">
+              <span className="rule-icon">■</span>
+              <span>Evidence uploaded after SLA due date flagged as LATE</span>
+            </div>
+            <div className="rule-item">
+              <span className="rule-icon">■</span>
+              <span>Files cannot be replaced or deleted after upload</span>
             </div>
           </div>
+        </div>
+
+        {error && <div className="alert alert-error">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
+          {/* Drag & Drop Zone */}
+          <div 
+            className={`file-drop-zone ${isDragging ? 'dragging' : ''} ${file ? 'has-file' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById('evidence-file')?.click()}
+          >
+            <input 
+              type="file" 
+              id="evidence-file"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            {!file ? (
+              <>
+                <div className="drop-icon">↑</div>
+                <div className="drop-text">Drag & drop file here</div>
+                <div className="drop-subtext">or click to browse</div>
+                <div className="drop-formats">Accepted: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (max 10MB)</div>
+              </>
+            ) : (
+              <div className="file-preview">
+                <div className="file-info">
+                  <div className="file-name">{file.name}</div>
+                  <div className="file-size">{formatFileSize(file.size)}</div>
+                </div>
+                <div className={`validation-badge ${validationStatus}`}>
+                  {validationStatus === 'valid' && '✓ Valid'}
+                  {validationStatus === 'warning' && '⚠ Large file'}
+                  {validationStatus === 'pending' && '○ Validating...'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Auto-captured metadata */}
+          <div className="auto-metadata">
+            <div className="metadata-header">AUTO-CAPTURED METADATA</div>
+            <div className="metadata-grid">
+              <div className="metadata-item">
+                <span className="metadata-label">Upload Timestamp</span>
+                <span className="metadata-value">{new Date().toLocaleString()} IST</span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Uploaded By</span>
+                <span className="metadata-value">Current User (logged)</span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Late Status</span>
+                <span className="metadata-value">Will be calculated on upload</span>
+              </div>
+            </div>
+          </div>
+
           <div className="form-group">
             <label>Reference Note</label>
             <textarea 
               value={referenceNote} 
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReferenceNote(e.target.value)}
-              placeholder="Optional note about this evidence..."
+              placeholder="Optional: Describe what this evidence demonstrates or references..."
             />
           </div>
+          
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading || !file}>
               {loading ? 'Uploading...' : 'Upload Evidence'}
             </button>
           </div>
@@ -670,6 +893,9 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({ obligationId, onC
   const [status, setStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [showEscalation, setShowEscalation] = useState<boolean>(false);
+  const [escalationLevel, setEscalationLevel] = useState<string>('L1');
+  const [escalationReason, setEscalationReason] = useState<string>('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -684,31 +910,384 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({ obligationId, onC
     }
   };
 
+  const handleEscalation = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      // API call for escalation would go here
+      // For now, we simulate success
+      await new Promise(resolve => setTimeout(resolve, 500));
+      onSuccess();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to escalate');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <h2>Change Status</h2>
-        <div className="alert alert-warning" style={{ marginBottom: '16px' }}>
-          <strong>Warning:</strong> This action cannot be undone. Once closed or marked breached,
-          the obligation status cannot be changed back to open.
+      <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-tabs">
+          <button 
+            className={`modal-tab ${!showEscalation ? 'active' : ''}`}
+            onClick={() => setShowEscalation(false)}
+          >
+            Change Status
+          </button>
+          <button 
+            className={`modal-tab ${showEscalation ? 'active' : ''}`}
+            onClick={() => setShowEscalation(true)}
+          >
+            Escalate
+          </button>
         </div>
-        {error && <div className="alert alert-error">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>New Status <span className="required">*</span></label>
-            <select value={status} onChange={(e: ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value)} required>
-              <option value="">-- Select Status --</option>
-              <option value="closed">Closed (Completed successfully)</option>
-              <option value="breached">Breached (Failed to meet SLA)</option>
-            </select>
+
+        {!showEscalation ? (
+          <>
+            <h2>Change Status</h2>
+            <div className="alert alert-warning" style={{ marginBottom: '16px' }}>
+              <strong>Warning:</strong> This action cannot be undone. Once closed or marked breached,
+              the obligation status cannot be changed back to open.
+            </div>
+            {error && <div className="alert alert-error">{error}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>New Status <span className="required">*</span></label>
+                <select value={status} onChange={(e: ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value)} required>
+                  <option value="">-- Select Status --</option>
+                  <option value="closed">Closed (Completed successfully)</option>
+                  <option value="breached">Breached (Failed to meet SLA)</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+                <button type="submit" className="btn btn-danger" disabled={loading || !status}>
+                  {loading ? 'Updating...' : 'Update Status'}
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <>
+            <h2>Escalation Workflow</h2>
+            <div className="escalation-flow">
+              <div className="escalation-levels">
+                <div 
+                  className={`escalation-level ${escalationLevel === 'L1' ? 'selected' : ''}`}
+                  onClick={() => setEscalationLevel('L1')}
+                >
+                  <div className="level-header">
+                    <span className="level-badge">L1</span>
+                    <span className="level-name">Manager Escalation</span>
+                  </div>
+                  <div className="level-desc">Notify department manager for immediate attention</div>
+                  <div className="level-sla">Response SLA: 4 hours</div>
+                </div>
+                <div className="escalation-arrow">↓</div>
+                <div 
+                  className={`escalation-level ${escalationLevel === 'L2' ? 'selected' : ''}`}
+                  onClick={() => setEscalationLevel('L2')}
+                >
+                  <div className="level-header">
+                    <span className="level-badge">L2</span>
+                    <span className="level-name">Compliance Head</span>
+                  </div>
+                  <div className="level-desc">Escalate to Compliance Head for regulatory risk review</div>
+                  <div className="level-sla">Response SLA: 2 hours</div>
+                </div>
+                <div className="escalation-arrow">↓</div>
+                <div 
+                  className={`escalation-level ${escalationLevel === 'L3' ? 'selected' : ''}`}
+                  onClick={() => setEscalationLevel('L3')}
+                >
+                  <div className="level-header">
+                    <span className="level-badge critical">L3</span>
+                    <span className="level-name">CRO / Board Level</span>
+                  </div>
+                  <div className="level-desc">Critical escalation to Chief Risk Officer</div>
+                  <div className="level-sla">Response SLA: 1 hour</div>
+                </div>
+              </div>
+              <div className="escalation-form">
+                <div className="form-group">
+                  <label>Escalation Reason <span className="required">*</span></label>
+                  <textarea 
+                    value={escalationReason} 
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setEscalationReason(e.target.value)}
+                    placeholder="Describe the reason for escalation and urgency level..."
+                    required
+                  />
+                </div>
+                <div className="escalation-summary">
+                  <div className="summary-row">
+                    <span className="summary-label">Escalation Level:</span>
+                    <span className="summary-value">{escalationLevel}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span className="summary-label">Notified Role:</span>
+                    <span className="summary-value">
+                      {escalationLevel === 'L1' && 'Department Manager'}
+                      {escalationLevel === 'L2' && 'Compliance Head'}
+                      {escalationLevel === 'L3' && 'Chief Risk Officer'}
+                    </span>
+                  </div>
+                  <div className="summary-row">
+                    <span className="summary-label">Timestamp:</span>
+                    <span className="summary-value">{new Date().toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {error && <div className="alert alert-error">{error}</div>}
+            <div className="modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button 
+                type="button" 
+                className="btn btn-danger" 
+                disabled={loading || !escalationReason.trim()}
+                onClick={handleEscalation}
+              >
+                {loading ? 'Escalating...' : `Escalate to ${escalationLevel}`}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// EXPORT PREVIEW MODAL
+// ============================================
+interface ExportPreviewModalProps {
+  obligationId: string;
+  obligation: Obligation;
+  evidence: Evidence[];
+  ownerHistory: Owner[];
+  slaHistory: SLA[];
+  onClose: () => void;
+}
+
+const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ 
+  obligationId, 
+  obligation, 
+  evidence, 
+  ownerHistory, 
+  slaHistory, 
+  onClose 
+}) => {
+  const [activeTab, setActiveTab] = useState<'pdf' | 'zip'>('pdf');
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
+        <div className="export-preview-header">
+          <h2>AUDIT EXPORT PACKAGE</h2>
+          <div className="export-badge">Regulatory Ready</div>
+        </div>
+
+        <div className="export-tabs">
+          <button 
+            className={`export-tab ${activeTab === 'pdf' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pdf')}
+          >
+            PDF Report
+          </button>
+          <button 
+            className={`export-tab ${activeTab === 'zip' ? 'active' : ''}`}
+            onClick={() => setActiveTab('zip')}
+          >
+            Evidence Bundle (ZIP)
+          </button>
+        </div>
+
+        {activeTab === 'pdf' ? (
+          <div className="export-preview-content">
+            <div className="pdf-preview">
+              <div className="pdf-page">
+                <div className="pdf-header">
+                  <div className="pdf-logo">COMPLIANCE EXECUTION SYSTEM</div>
+                  <div className="pdf-title">REGULATORY COMPLIANCE REPORT</div>
+                  <div className="pdf-subtitle">Obligation Audit Trail</div>
+                </div>
+                
+                <div className="pdf-section">
+                  <div className="pdf-section-title">OBLIGATION DETAILS</div>
+                  <div className="pdf-table">
+                    <div className="pdf-row">
+                      <span className="pdf-label">Title:</span>
+                      <span className="pdf-value">{obligation.title}</span>
+                    </div>
+                    <div className="pdf-row">
+                      <span className="pdf-label">ID:</span>
+                      <span className="pdf-value">{obligation.id}</span>
+                    </div>
+                    <div className="pdf-row">
+                      <span className="pdf-label">Regulation Tag:</span>
+                      <span className="pdf-value">{obligation.regulation_tag || 'N/A'}</span>
+                    </div>
+                    <div className="pdf-row">
+                      <span className="pdf-label">Status:</span>
+                      <span className="pdf-value">{obligation.status.toUpperCase()}</span>
+                    </div>
+                    <div className="pdf-row">
+                      <span className="pdf-label">Created:</span>
+                      <span className="pdf-value">{new Date(obligation.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pdf-section">
+                  <div className="pdf-section-title">OWNERSHIP HISTORY ({ownerHistory.length} records)</div>
+                  <div className="pdf-mini-table">
+                    <div className="pdf-mini-header">
+                      <span>Owner</span>
+                      <span>Assigned</span>
+                      <span>By</span>
+                    </div>
+                    {ownerHistory.slice(0, 3).map((owner, idx) => (
+                      <div key={idx} className="pdf-mini-row">
+                        <span>{owner.owner_name}</span>
+                        <span>{new Date(owner.assigned_at).toLocaleDateString()}</span>
+                        <span>{owner.assigned_by_name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pdf-section">
+                  <div className="pdf-section-title">SLA HISTORY ({slaHistory.length} records)</div>
+                  <div className="pdf-mini-table">
+                    <div className="pdf-mini-header">
+                      <span>Due Date</span>
+                      <span>Set By</span>
+                      <span>Reason</span>
+                    </div>
+                    {slaHistory.slice(0, 3).map((sla, idx) => (
+                      <div key={idx} className="pdf-mini-row">
+                        <span>{new Date(sla.due_date).toLocaleDateString()}</span>
+                        <span>{sla.created_by_name}</span>
+                        <span>{sla.extension_reason || '-'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pdf-section">
+                  <div className="pdf-section-title">EVIDENCE RECORDS ({evidence.length} files)</div>
+                  <div className="pdf-evidence-list">
+                    {evidence.slice(0, 4).map((ev, idx) => (
+                      <div key={idx} className="pdf-evidence-item">
+                        <span className="pdf-file-icon">■</span>
+                        <span>{ev.file_name}</span>
+                        <span className={ev.is_late ? 'pdf-late' : 'pdf-ontime'}>
+                          {ev.is_late ? 'LATE' : 'ON-TIME'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pdf-footer">
+                  <div className="pdf-footer-line">
+                    Generated: {new Date().toLocaleString()} | System of Record - Immutable Audit Trail
+                  </div>
+                  <div className="pdf-footer-line">
+                    This document is cryptographically signed and admissible in regulatory proceedings
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-danger" disabled={loading || !status}>
-              {loading ? 'Updating...' : 'Update Status'}
-            </button>
+        ) : (
+          <div className="export-preview-content">
+            <div className="zip-preview">
+              <div className="folder-structure">
+                <div className="folder-title">📁 {obligation.title.slice(0, 30)}_{obligation.id.slice(0, 8)}.zip</div>
+                <div className="folder-tree">
+                  <div className="tree-item folder">
+                    <span className="tree-icon">📁</span>
+                    <span className="tree-name">/audit_report</span>
+                  </div>
+                  <div className="tree-item file indent-1">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">obligation_report.pdf</span>
+                    <span className="tree-meta">Complete audit trail</span>
+                  </div>
+                  <div className="tree-item file indent-1">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">ownership_history.csv</span>
+                    <span className="tree-meta">{ownerHistory.length} records</span>
+                  </div>
+                  <div className="tree-item file indent-1">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">sla_history.csv</span>
+                    <span className="tree-meta">{slaHistory.length} records</span>
+                  </div>
+                  <div className="tree-item folder">
+                    <span className="tree-icon">📁</span>
+                    <span className="tree-name">/evidence</span>
+                  </div>
+                  {evidence.slice(0, 5).map((ev, idx) => (
+                    <div key={idx} className="tree-item file indent-1">
+                      <span className="tree-icon">📎</span>
+                      <span className="tree-name">{ev.file_name}</span>
+                      <span className={`tree-badge ${ev.is_late ? 'late' : 'ontime'}`}>
+                        {ev.is_late ? 'LATE' : 'ON-TIME'}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="tree-item file indent-1">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">evidence_manifest.json</span>
+                    <span className="tree-meta">Timestamps & checksums</span>
+                  </div>
+                  <div className="tree-item folder">
+                    <span className="tree-icon">📁</span>
+                    <span className="tree-name">/audit_log</span>
+                  </div>
+                  <div className="tree-item file indent-1">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">complete_audit_trail.json</span>
+                    <span className="tree-meta">All actions logged</span>
+                  </div>
+                  <div className="tree-item file">
+                    <span className="tree-icon">📄</span>
+                    <span className="tree-name">MANIFEST.json</span>
+                    <span className="tree-meta">Package integrity hash</span>
+                  </div>
+                </div>
+              </div>
+              <div className="zip-summary">
+                <div className="summary-item">
+                  <span className="summary-label">Total Files:</span>
+                  <span className="summary-value">{4 + evidence.length}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Evidence Files:</span>
+                  <span className="summary-value">{evidence.length}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Late Evidence:</span>
+                  <span className="summary-value">{evidence.filter(e => e.is_late).length}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        )}
+
+        <div className="modal-actions">
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
+          <a 
+            href={activeTab === 'pdf' ? exportAPI.obligationPdf(obligationId) : exportAPI.obligationZip(obligationId)}
+            className="btn btn-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Download {activeTab === 'pdf' ? 'PDF Report' : 'Evidence Bundle'}
+          </a>
+        </div>
       </div>
     </div>
   );

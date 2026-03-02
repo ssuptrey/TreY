@@ -24,16 +24,16 @@ function question(query: string): Promise<string> {
 }
 
 async function runMigration(client: Client, filePath: string): Promise<boolean> {
-  console.log(`\n📄 Running migration: ${path.basename(filePath)}`);
+  console.log(`\n[MIGRATE] Running migration: ${path.basename(filePath)}`);
   
   const sql = fs.readFileSync(filePath, 'utf8');
   
   try {
     await client.query(sql);
-    console.log(`✅ Migration completed: ${path.basename(filePath)}`);
+    console.log(`[SUCCESS] Migration completed: ${path.basename(filePath)}`);
     return true;
   } catch (error) {
-    console.error(`❌ Migration failed: ${path.basename(filePath)}`);
+    console.error(`[ERROR] Migration failed: ${path.basename(filePath)}`);
     console.error((error as Error).message);
     return false;
   }
@@ -43,17 +43,17 @@ async function testConnection(connectionString: string): Promise<boolean> {
   const client = new Client({ connectionString });
   
   try {
-    console.log('\n🔌 Testing database connection...');
+    console.log('\n[DB] Testing database connection...');
     await client.connect();
     
     const result = await client.query('SELECT version()');
-    console.log('✅ Connected successfully!');
-    console.log(`📊 PostgreSQL version: ${result.rows[0].version.split(' ')[1]}`);
+    console.log('[SUCCESS] Connected successfully!');
+    console.log(`[INFO] PostgreSQL version: ${result.rows[0].version.split(' ')[1]}`);
     
     await client.end();
     return true;
   } catch (error) {
-    console.error('❌ Connection failed:', (error as Error).message);
+    console.error('[ERROR] Connection failed:', (error as Error).message);
     return false;
   }
 }
@@ -70,9 +70,9 @@ async function checkExistingTables(client: Client): Promise<string[]> {
 }
 
 async function main(): Promise<void> {
-  console.log('╔════════════════════════════════════════════════════════╗');
-  console.log('║   Compliance Execution System - Database Setup        ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.log('============================================================');
+  console.log('   Compliance Execution System - Database Setup');
+  console.log('============================================================\n');
 
   // Get connection string
   let connectionString = process.env.DATABASE_URL;
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
     connectionString = await question('Enter your database connection string: ');
     
     if (!connectionString || !connectionString.startsWith('postgresql://')) {
-      console.error('\n❌ Invalid connection string. Must start with "postgresql://"');
+      console.error('\n[ERROR] Invalid connection string. Must start with "postgresql://"');
       process.exit(1);
     }
   }
@@ -93,7 +93,7 @@ async function main(): Promise<void> {
   // Test connection
   const connected = await testConnection(connectionString);
   if (!connected) {
-    console.error('\n❌ Cannot proceed without database connection.');
+    console.error('\n[ERROR] Cannot proceed without database connection.');
     console.log('\nTroubleshooting:');
     console.log('1. Check your connection string is correct');
     console.log('2. Verify database is not paused (Neon/Supabase auto-pause)');
@@ -106,7 +106,7 @@ async function main(): Promise<void> {
   await client.connect();
 
   // Check existing tables
-  console.log('\n📋 Checking existing database schema...');
+  console.log('\n[INFO] Checking existing database schema...');
   const existingTables = await checkExistingTables(client);
   
   if (existingTables.length > 0) {
@@ -115,17 +115,17 @@ async function main(): Promise<void> {
     
     const proceed = await question('\nDatabase already has tables. Continue with migrations? (y/n): ');
     if (proceed.toLowerCase() !== 'y') {
-      console.log('❌ Setup cancelled.');
+      console.log('[CANCELLED] Setup cancelled.');
       await client.end();
       rl.close();
       process.exit(0);
     }
   } else {
-    console.log('✅ Database is empty, ready for migrations.');
+    console.log('[SUCCESS] Database is empty, ready for migrations.');
   }
 
   // Run migrations
-  console.log('\n🚀 Starting database migrations...\n');
+  console.log('\n[START] Starting database migrations...\n');
   
   const migrationsDir = path.join(__dirname, 'migrations');
   const migrationFiles = fs.readdirSync(migrationsDir)
@@ -152,14 +152,14 @@ async function main(): Promise<void> {
   }
 
   // Summary
-  console.log('\n' + '═'.repeat(60));
-  console.log('📊 Migration Summary:');
-  console.log(`   ✅ Successful: ${successCount}`);
-  console.log(`   ❌ Failed: ${failCount}`);
-  console.log('═'.repeat(60));
+  console.log('\n' + '='.repeat(60));
+  console.log('Migration Summary:');
+  console.log(`   [SUCCESS] Successful: ${successCount}`);
+  console.log(`   [FAILED] Failed: ${failCount}`);
+  console.log('='.repeat(60));
 
   // Verify tables
-  console.log('\n🔍 Verifying database schema...');
+  console.log('\n[VERIFY] Verifying database schema...');
   const finalTables = await checkExistingTables(client);
   
   const expectedTables = [
@@ -172,14 +172,14 @@ async function main(): Promise<void> {
     'attachments'
   ];
 
-  console.log(`\n📋 Created tables (${finalTables.length}):`);
+  console.log(`\n[INFO] Created tables (${finalTables.length}):`);
   expectedTables.forEach(table => {
     const exists = finalTables.includes(table);
-    console.log(`   ${exists ? '✅' : '❌'} ${table}`);
+    console.log(`   ${exists ? '[OK]' : '[MISSING]'} ${table}`);
   });
 
   // Get table counts
-  console.log('\n📊 Table row counts:');
+  console.log('\n[INFO] Table row counts:');
   for (const table of expectedTables) {
     if (finalTables.includes(table)) {
       try {
@@ -194,7 +194,7 @@ async function main(): Promise<void> {
   await client.end();
   rl.close();
 
-  console.log('\n✅ Database setup complete!');
+  console.log('\n[SUCCESS] Database setup complete!');
   console.log('\nNext steps:');
   console.log('1. Update backend/.env with your DATABASE_URL');
   console.log('2. Run: cd backend && npm install');
@@ -204,6 +204,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(error => {
-  console.error('\n❌ Setup failed:', error);
+  console.error('\n[ERROR] Setup failed:', error);
   process.exit(1);
 });

@@ -162,12 +162,12 @@ node setup-database.js
 
 **Expected output:**
 ```
-✅ Connected successfully!
-📋 Database is empty, ready for migrations.
-🚀 Starting database migrations...
-✅ Migration completed: 001_initial_schema.sql
-✅ Migration completed: 002_password_security.sql
-✅ Database setup complete!
+[SUCCESS] Connected successfully!
+[INFO] Database is empty, ready for migrations.
+[START] Starting database migrations...
+[SUCCESS] Migration completed: 001_initial_schema.sql
+[SUCCESS] Migration completed: 002_password_security.sql
+[SUCCESS] Database setup complete!
 ```
 
 ---

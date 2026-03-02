@@ -25,7 +25,7 @@ const Layout: React.FC = () => {
       <header className="header">
         <h1>Compliance Execution System</h1>
         <div className="header-info">
-          <span>{user?.organizationName}</span>
+          <span>{user?.organization_name}</span>
           <span>|</span>
           <span>{user?.name} ({user?.role})</span>
           <button className="btn btn-sm btn-outline" onClick={handleLogout}>
@@ -43,8 +43,33 @@ const Layout: React.FC = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/inbox" className={({ isActive }) => isActive ? 'active' : ''}>
+              Unified Inbox
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/my-tasks" className={({ isActive }) => isActive ? 'active' : ''}>
+              My Tasks
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>
+              Obligation Register
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/obligations" className={({ isActive }) => isActive ? 'active' : ''}>
               Obligations
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/evidence" className={({ isActive }) => isActive ? 'active' : ''}>
+              Evidence Library
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/ingestion" className={({ isActive }) => isActive ? 'active' : ''}>
+              Ingestion Center
             </NavLink>
           </li>
         </ul>

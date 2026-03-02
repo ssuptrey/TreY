@@ -1,4 +1,4 @@
-# SYSTEM RULES — DO NOT OVERRIDE
+# SYSTEM RULES - DO NOT OVERRIDE
 
 This document defines the complete scope of the NBFC Compliance Execution Platform.  
 Nothing outside this file is allowed.
@@ -7,20 +7,20 @@ Nothing outside this file is allowed.
 WHAT NOT TO BUILD (STRICT BANS)
 ======================================================
 
-❌ No regulation interpretation  
-❌ No AI advisors, GPT features, predictive features  
-❌ No circular-mapping or compliance logic automation  
-❌ No workflow engines  
-❌ No OCR or text extraction  
-❌ No dashboards with insights  
-❌ No mobile apps, desktop apps, electron apps  
-❌ No microservices, Kafka, queues, over-engineering  
-❌ No extra tables beyond approved seven tables  
-❌ No timestamp editing  
-❌ No evidence editing  
-❌ No deletion of obligations, evidence, SLAs, owners  
+[BANNED] No regulation interpretation  
+[BANNED] No AI advisors, GPT features, predictive features  
+[BANNED] No circular-mapping or compliance logic automation  
+[BANNED] No workflow engines  
+[BANNED] No OCR or text extraction  
+[BANNED] No dashboards with insights  
+[BANNED] No mobile apps, desktop apps, electron apps  
+[BANNED] No microservices, Kafka, queues, over-engineering  
+[BANNED] No extra tables beyond approved seven tables  
+[BANNED] No timestamp editing  
+[BANNED] No evidence editing  
+[BANNED] No deletion of obligations, evidence, SLAs, owners  
 
-If a feature is not explicitly listed → DO NOT BUILD IT.
+If a feature is not explicitly listed - DO NOT BUILD IT.
 
 ======================================================
 WHAT TO BUILD (APPROVED SCOPE)

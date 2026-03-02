@@ -4,16 +4,13 @@ import { AuthenticatedRequest } from '../types/requests';
 
 interface AuditControllerDeps {
   auditRepository: any;
-  exportService: any;
 }
 
 export class AuditController {
   private auditRepository: any;
-  private exportService: any;
 
   constructor(deps: AuditControllerDeps) {
     this.auditRepository = deps.auditRepository;
-    this.exportService = deps.exportService;
   }
 
   getLogs = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {

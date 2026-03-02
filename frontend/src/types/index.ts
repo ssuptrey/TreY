@@ -28,8 +28,12 @@ export interface Obligation {
   owner_name?: string;
   owner_email?: string;
   sla_deadline?: string;
+  sla_due_date?: string;
   days_remaining?: number;
   risk_level?: 'safe' | 'warning' | 'critical' | 'overdue';
+  risk_status?: string;
+  regulation_tag?: string;
+  evidence_count?: number;
 }
 
 export interface SLA {
@@ -92,13 +96,46 @@ export interface LoginResponse {
 
 export interface DashboardSummary {
   total: number;
-  overdue: number;
-  critical: number;
-  warning: number;
-  safe: number;
+  green: number;
+  amber: number;
+  red: number;
+  closed: number;
+}
+
+export interface DashboardObligation {
+  id: string;
+  title: string;
+  status: string;
+  regulation_tag: string | null;
+  owner_name: string | null;
+  due_date: string | null;
+  days_remaining: number | null;
+  risk_status: string;
+  evidence_count: number;
+  late_evidence_count: number;
 }
 
 export interface DashboardData {
-  obligations: Obligation[];
+  obligations: DashboardObligation[];
   summary: DashboardSummary;
+}
+
+export interface ObligationData {
+  obligation: {
+    id: string;
+    title: string;
+    description?: string;
+    regulation_tag?: string;
+    status: string;
+    created_at: string;
+    created_by_name: string;
+    daysRemaining: number | null;
+    riskStatus: string;
+  };
+  ownerHistory: any[];
+  currentOwner?: any;
+  slaHistory: any[];
+  currentSla?: any;
+  evidence: any[];
+  auditTimeline: any[];
 }

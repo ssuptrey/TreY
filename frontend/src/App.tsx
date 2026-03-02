@@ -6,8 +6,21 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ErrorBoundary } from './components';
 import { Layout } from './components';
-import { Login, Register, Dashboard, Obligations, ObligationDetail, CreateObligation } from './pages';
+import { 
+  Login, 
+  Register, 
+  Dashboard, 
+  Obligations, 
+  ObligationDetail, 
+  CreateObligation,
+  EvidenceWall,
+  MyTasks,
+  ObligationRegister,
+  IngestionCenter,
+  UnifiedInbox
+} from './pages';
 import './styles/App.css';
+import './styles/enhanced-components.css';
 
 interface RouteWrapperProps {
   children: ReactNode;
@@ -60,9 +73,14 @@ const AppRoutes: React.FC = () => {
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="my-tasks" element={<MyTasks />} />
         <Route path="obligations" element={<Obligations />} />
         <Route path="obligations/new" element={<CreateObligation />} />
         <Route path="obligations/:id" element={<ObligationDetail />} />
+        <Route path="register" element={<ObligationRegister />} />
+        <Route path="evidence" element={<EvidenceWall />} />
+        <Route path="ingestion" element={<IngestionCenter />} />
+        <Route path="inbox" element={<UnifiedInbox />} />
       </Route>
       
       {/* Catch all */}

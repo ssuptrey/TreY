@@ -234,10 +234,10 @@ Color-coded status:
 
 | Color | Condition |
 |-------|-----------|
-| 🟢 GREEN | >15 days remaining |
-| 🟡 AMBER | 1-15 days remaining |
-| 🔴 RED | Breached or overdue |
-| ⚪ CLOSED | Obligation closed |
+| GREEN | >15 days remaining |
+| AMBER | 1-15 days remaining |
+| RED | Breached or overdue |
+| CLOSED | Obligation closed |
 
 ---
 

@@ -35,7 +35,7 @@ const Obligations: React.FC = () => {
         params.status = filter;
       }
       const response = await obligationsAPI.list(params);
-      setObligations(response.data.obligations);
+      setObligations(response.data.data as any || []);
     } catch (err) {
       setError('Failed to load obligations');
     } finally {

@@ -54,7 +54,7 @@ export class OrganizationController {
     }
   };
 
-  list = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  list = async (_req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const organizations = await this.organizationRepository.findAll();
 

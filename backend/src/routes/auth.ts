@@ -444,4 +444,122 @@ router.get('/password-requirements', (_req: Request, res: Response): void => {
   });
 });
 
+/**
+ * POST /api/auth/refresh
+ * Refresh JWT token (get new token before current expires)
+ */
+router.post('/refresh', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    // User is already authenticated, just issue a new token
+    const user = req.user!;
+
+    // Generate new JWT
+    const token = jwt.sign(
+      { userId: user.id },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    await createAuditLog({
+      entityType: 'user',
+      entityId: user.id,
+      action: 'TOKEN_REFRESH',
+      performedBy: user.id,
+      ipAddress: req.ip || undefined,
+      userAgent: req.headers['user-agent']
+    });
+
+    res.json({
+      success: true,
+      message: 'Token refreshed successfully',
+      token,
+      expiresIn: '24h'
+    });
+  } catch (error) {
+    console.error('[AUTH] Token refresh error:', error);
+    res.status(500).json({
+      error: 'REFRESH_ERROR',
+      message: 'Failed to refresh token'
+    });
+  }
+});
+
+/**
+ * POST /api/auth/force-password-reset
+ * Admin can force a user to change their password on next login
+ */
+router.post('/force-password-reset', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.body;
+    const adminUser = req.user!;
+
+    // Only admin and manager can force password reset
+    if (!['admin', 'manager'].includes(adminUser.role)) {
+      res.status(403).json({
+        error: 'INSUFFICIENT_PERMISSIONS',
+        message: 'Only admin or manager can force password reset'
+      });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'User ID is required'
+      });
+      return;
+    }
+
+    // Check that target user is in same organization (unless admin)
+    const targetUser = await pool.query(
+      'SELECT id, organization_id, email FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (targetUser.rows.length === 0) {
+      res.status(404).json({
+        error: 'NOT_FOUND',
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Manager can only affect users in their organization
+    if (adminUser.role === 'manager' && targetUser.rows[0].organization_id !== adminUser.organization_id) {
+      res.status(403).json({
+        error: 'ORGANIZATION_MISMATCH',
+        message: 'Can only manage users in your organization'
+      });
+      return;
+    }
+
+    // Set force_password_change flag
+    await pool.query(
+      'UPDATE users SET force_password_change = TRUE WHERE id = $1',
+      [userId]
+    );
+
+    await createAuditLog({
+      entityType: 'user',
+      entityId: userId,
+      action: 'FORCE_PASSWORD_RESET',
+      performedBy: adminUser.id,
+      newValue: { targetEmail: targetUser.rows[0].email },
+      ipAddress: req.ip || undefined,
+      userAgent: req.headers['user-agent']
+    });
+
+    res.json({
+      success: true,
+      message: 'User will be required to change password on next login'
+    });
+  } catch (error) {
+    console.error('[AUTH] Force password reset error:', error);
+    res.status(500).json({
+      error: 'FORCE_RESET_ERROR',
+      message: 'Failed to force password reset'
+    });
+  }
+});
+
 export default router;
