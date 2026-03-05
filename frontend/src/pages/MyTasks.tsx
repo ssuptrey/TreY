@@ -165,8 +165,8 @@ const MyTasks: React.FC = () => {
 
   const getTypeIcon = (type: Task['type']): string => {
     switch (type) {
-      case 'evidence_upload': return '📎';
-      case 'review': return '🔍';
+      case 'evidence_upload': return '+';
+      case 'review': return '*';
       case 'approval': return '✓';
       case 'escalation': return '⚡';
       case 'action_required': return '!';
@@ -248,7 +248,7 @@ const MyTasks: React.FC = () => {
       {/* Urgent Alert */}
       {stats.overdue > 0 && activeTab !== 'overdue' && (
         <div className="urgent-alert" onClick={() => setActiveTab('overdue')}>
-          <span className="alert-icon">⚠</span>
+          <span className="alert-icon">!</span>
           <span>You have <strong>{stats.overdue} overdue tasks</strong> requiring immediate attention</span>
           <span className="view-link">View →</span>
         </div>

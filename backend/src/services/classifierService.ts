@@ -495,10 +495,10 @@ export async function getUnifiedInbox(
   const countResult = await pool.query(countQuery, params);
   const total = parseInt(countResult.rows[0].count, 10);
 
-  // Add pagination
+  // Sort newest first + pagination
   const limit = filters?.limit || 50;
   const offset = filters?.offset || 0;
-  query += ` LIMIT ${limit} OFFSET ${offset}`;
+  query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const result = await pool.query(query, params);
 

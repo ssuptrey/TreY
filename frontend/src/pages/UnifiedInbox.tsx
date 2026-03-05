@@ -3,7 +3,7 @@
 // ============================================
 // The one page NBFC ops teams actually need
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 
@@ -62,9 +62,11 @@ const UnifiedInbox: React.FC = () => {
   // Track new items for highlight animation
   const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set());
   
-  // Demo mode state
-  const [demoTriggering, setDemoTriggering] = useState(false);
-  const [showDemoPanel, setShowDemoPanel] = useState(false);
+  // Processing time indicator (shown briefly after demo trigger)
+  const [processingTime, setProcessingTime] = useState<number | null>(null);
+  
+  // Demo mode state (ref avoids useCallback/useEffect churn)
+  const demoTriggeringRef = useRef(false);
   
   // Filters
   const [filters, setFilters] = useState({
@@ -81,83 +83,73 @@ const UnifiedInbox: React.FC = () => {
   const [classifyModal, setClassifyModal] = useState<{ open: boolean; item: InboxItem | null }>({ open: false, item: null });
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  // Demo forward trigger - simulates receiving a forwarded email
-  // Optional complaintIndex: 0=KYC, 1=Interest, 2=Harassment
-  const triggerDemoForward = useCallback(async (complaintIndex?: number) => {
-    if (demoTriggering) return;
-    
-    try {
-      setDemoTriggering(true);
-      const demoNames = ['KYC update', 'Incorrect interest', 'Harassment complaint'];
-      const label = typeof complaintIndex === 'number' ? demoNames[complaintIndex] : 'random';
-      console.log(`[Demo] Triggering: ${label}`);
-      
-      const response = await api.post('/ingestion/demo-forward', 
-        typeof complaintIndex === 'number' ? { complaintIndex } : {}
-      );
-      
-      if (response.data.success) {
-        console.log(`[Demo] ✓ Created: ${response.data.obligation_number} - "${response.data.title}"`);
-        // The auto-refresh will pick up the new item
-      }
-    } catch (err: any) {
-      console.error('[Demo] Failed to trigger:', err);
-    } finally {
-      setDemoTriggering(false);
-    }
-  }, [demoTriggering]);
+  // loadInbox ref so keyboard handler can call it without dependency
+  const loadInboxRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
-  // Hidden keyboard shortcuts for demo:
-  // Alt+1 = KYC complaint
-  // Alt+2 = Interest complaint  
-  // Alt+3 = Harassment complaint
-  // Alt+D = Random complaint
-  // Alt+P = Toggle demo panel
+  // Keyboard shortcuts: press 1/2/3 anywhere on the page to create complaints
+  // Uses refs to avoid re-registering the listener on every state change
   useEffect(() => {
+    const triggerDemo = async (complaintIndex: number) => {
+      if (demoTriggeringRef.current) return;
+      demoTriggeringRef.current = true;
+      const names = ['KYC update', 'Incorrect interest', 'Harassment complaint'];
+      console.log(`[Demo] Triggering: ${names[complaintIndex]}`);
+      try {
+        const response = await api.post('/ingestion/demo-forward', { complaintIndex });
+        if (response.data.success) {
+          console.log(`[Demo] ✓ Created: ${response.data.obligation_number}`);
+          // Show processing time badge
+          setProcessingTime(response.data.processing_time_ms || 800);
+          setTimeout(() => setProcessingTime(null), 4000);
+          // Immediately refresh inbox so the new item appears right away
+          if (loadInboxRef.current) loadInboxRef.current();
+        }
+      } catch (err: any) {
+        console.error('[Demo] Failed:', err?.response?.data || err.message);
+      } finally {
+        demoTriggeringRef.current = false;
+      }
+    };
+
+    const resetDemo = async () => {
+      if (demoTriggeringRef.current) return;
+      demoTriggeringRef.current = true;
+      try {
+        // Step 1: Clear all existing obligations
+        const resetResponse = await api.delete('/ingestion/demo-reset');
+        if (resetResponse.data.success) {
+          console.log(`[Demo] ✓ Cleared ${resetResponse.data.deleted} obligations`);
+        }
+
+        // Step 2: Seed 5 fresh obligations
+        const seedResponse = await api.post('/ingestion/demo-seed');
+        if (seedResponse.data.success) {
+          console.log(`[Demo] ✓ Seeded ${seedResponse.data.created} obligations`);
+        }
+
+        // Step 3: Refresh inbox
+        if (loadInboxRef.current) loadInboxRef.current();
+      } catch (err: any) {
+        console.error('[Demo] Reset+Seed failed:', err?.response?.data || err.message);
+      } finally {
+        demoTriggeringRef.current = false;
+      }
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only process if Alt is held (not Ctrl - Chrome intercepts Ctrl+Shift+number)
-      if (!e.altKey) return;
-      
-      // Alt+1 - KYC update complaint
-      if (e.code === 'Digit1' || e.key === '1') {
-        e.preventDefault();
-        console.log('[Demo] Shortcut: Alt+1 → KYC update');
-        triggerDemoForward(0);
-        return;
-      }
-      // Alt+2 - Interest charge complaint
-      if (e.code === 'Digit2' || e.key === '2') {
-        e.preventDefault();
-        console.log('[Demo] Shortcut: Alt+2 → Incorrect interest');
-        triggerDemoForward(1);
-        return;
-      }
-      // Alt+3 - Harassment complaint
-      if (e.code === 'Digit3' || e.key === '3') {
-        e.preventDefault();
-        console.log('[Demo] Shortcut: Alt+3 → Harassment');
-        triggerDemoForward(2);
-        return;
-      }
-      // Alt+D - Random demo forward trigger
-      if (e.code === 'KeyD' || e.key === 'D' || e.key === 'd') {
-        e.preventDefault();
-        console.log('[Demo] Shortcut: Alt+D → Random complaint');
-        triggerDemoForward();
-        return;
-      }
-      // Alt+P - Toggle demo panel
-      if (e.code === 'KeyP' || e.key === 'P' || e.key === 'p') {
-        e.preventDefault();
-        console.log('[Demo] Toggling demo panel');
-        setShowDemoPanel(prev => !prev);
-        return;
-      }
+      // Only skip if user is actively typing in a text input or textarea
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+
+      if (e.key === '1') { e.preventDefault(); triggerDemo(0); return; }
+      if (e.key === '2') { e.preventDefault(); triggerDemo(1); return; }
+      if (e.key === '3') { e.preventDefault(); triggerDemo(2); return; }
+      if (e.key === '0') { e.preventDefault(); resetDemo(); return; }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerDemoForward]);
+  }, []); // Empty deps = register ONCE, uses refs for everything
 
   const loadInbox = useCallback(async () => {
     try {
@@ -203,6 +195,9 @@ const UnifiedInbox: React.FC = () => {
     }
   }, [filters]);
 
+  // Keep ref in sync so keyboard handler can call loadInbox
+  loadInboxRef.current = loadInbox;
+
   const loadCategories = async () => {
     try {
       const response = await api.get('/ingestion/categories');
@@ -229,22 +224,21 @@ const UnifiedInbox: React.FC = () => {
   }, []);
 
   const getChannelBadge = (channel: string) => {
-    const badges: Record<string, { icon: string; color: string }> = {
-      email: { icon: 'E', color: '#4285f4' },
-      whatsapp: { icon: 'W', color: '#25d366' },
-      api: { icon: 'A', color: '#6c757d' },
-      csv: { icon: 'C', color: '#fd7e14' },
-      forward: { icon: 'F', color: '#17a2b8' },
-      manual: { icon: 'M', color: '#6f42c1' }
+    const badges: Record<string, { label: string; bg: string; color: string }> = {
+      email: { label: 'Email', bg: 'rgba(0, 122, 255, 0.1)', color: '#007aff' },
+      whatsapp: { label: 'WhatsApp', bg: 'rgba(52, 199, 89, 0.1)', color: '#34c759' },
+      api: { label: 'API', bg: 'rgba(142, 142, 147, 0.12)', color: '#636366' },
+      csv: { label: 'CSV', bg: 'rgba(255, 149, 0, 0.1)', color: '#ff9500' },
+      forward: { label: 'Forward', bg: 'rgba(90, 200, 250, 0.1)', color: '#32ade6' },
+      manual: { label: 'Manual', bg: 'rgba(175, 82, 222, 0.1)', color: '#af52de' }
     };
-    const badge = badges[channel] || { icon: '?', color: '#999' };
+    const badge = badges[channel] || { label: channel, bg: 'rgba(142, 142, 147, 0.1)', color: '#8e8e93' };
     return (
       <span 
         className="channel-badge-icon" 
-        style={{ backgroundColor: badge.color }}
-        title={channel.toUpperCase()}
+        style={{ backgroundColor: badge.bg, color: badge.color }}
       >
-        {badge.icon}
+        {badge.label}
       </span>
     );
   };
@@ -258,16 +252,6 @@ const UnifiedInbox: React.FC = () => {
     };
     const badge = config[status] || { label: '—', className: '' };
     return <span className={`sla-badge ${badge.className}`}>{badge.label}</span>;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const config: Record<string, string> = {
-      critical: 'priority-critical',
-      high: 'priority-high',
-      medium: 'priority-medium',
-      low: 'priority-low'
-    };
-    return <span className={`priority-badge ${config[priority] || ''}`}>{priority}</span>;
   };
 
   const handleClassify = async () => {
@@ -425,6 +409,14 @@ const UnifiedInbox: React.FC = () => {
       {/* Error */}
       {error && <div className="inbox-error">{error}</div>}
 
+      {/* Processing Time Indicator */}
+      {processingTime !== null && (
+        <div className="processing-time-badge">
+          <span className="processing-time-icon">⚡</span>
+          <span>Processed in {(processingTime / 1000).toFixed(1)}s</span>
+        </div>
+      )}
+
       {/* Inbox Table */}
       <div className="inbox-table-wrapper">
         {loading ? (
@@ -437,41 +429,57 @@ const UnifiedInbox: React.FC = () => {
           <table className="inbox-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}></th>
-                <th>Complaint</th>
-                <th style={{ width: '140px' }}>Category</th>
-                <th style={{ width: '120px' }}>Department</th>
-                <th style={{ width: '120px' }}>Owner</th>
+                <th style={{ width: '70px' }}>Type</th>
+                <th>Subject / Title</th>
                 <th style={{ width: '100px' }}>SLA</th>
-                <th style={{ width: '80px' }}>Priority</th>
-                <th style={{ width: '50px' }}>Ev.</th>
+                <th style={{ width: '160px' }}>Owner</th>
+                <th style={{ width: '90px' }}>Source</th>
+                <th style={{ width: '140px' }}>Category</th>
+                <th style={{ width: '140px' }}>Created At</th>
               </tr>
             </thead>
             <tbody>
+              {/* Empty spacer row — new items slide into this space */}
+              <tr className="spacer-row">
+                <td colSpan={7} style={{ height: '4px', padding: 0, border: 'none' }}></td>
+              </tr>
               {items.map((item) => (
                 <tr 
                   key={item.id} 
                   className={`sla-row-${item.sla_status}${newItemIds.has(item.id) ? ' new-item-highlight' : ''}`}
                 >
-                  <td className="channel-col">
-                    {getChannelBadge(item.channel)}
+                  <td className="type-col">
+                    <span className={`type-badge type-${item.status}`}>
+                      {item.status === 'open' ? 'Open' : item.status === 'in_progress' ? 'In Progress' : 'Closed'}
+                    </span>
                   </td>
                   <td className="title-col">
                     <Link to={`/obligations/${item.id}`} className="item-link">
                       <span className="item-title">{item.title}</span>
                     </Link>
-                    <span className="item-meta">
-                      {new Date(item.created_at).toLocaleDateString()} 
-                      {item.external_reference_id && ` • Ref: ${item.external_reference_id}`}
-                    </span>
+                  </td>
+                  <td className="sla-col">
+                    {getSLABadge(item.sla_status, item.days_remaining)}
+                  </td>
+                  <td className="owner-col">
+                    {item.owner_name ? (
+                      <span className="owner-badge" title={item.owner_email || ''}>
+                        <span className="owner-avatar">
+                          {item.owner_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        </span>
+                        <span className="owner-name">{item.owner_name}</span>
+                      </span>
+                    ) : (
+                      <span className="no-owner">Unassigned</span>
+                    )}
+                  </td>
+                  <td className="source-col">
+                    {getChannelBadge(item.channel)}
                   </td>
                   <td className="category-col">
                     {item.category_code ? (
                       <span className="category-badge" title={item.category_name || ''}>
                         {item.category_code}
-                        {item.classification_confidence === 'low' && (
-                          <span className="confidence-warning" title="Low confidence - review needed">?</span>
-                        )}
                       </span>
                     ) : (
                       <button 
@@ -482,30 +490,10 @@ const UnifiedInbox: React.FC = () => {
                       </button>
                     )}
                   </td>
-                  <td className="department-col">
-                    {item.department || '—'}
-                  </td>
-                  <td className="owner-col">
-                    {item.owner_name ? (
-                      <span className="owner-badge" title={item.owner_email || ''}>
-                        {item.owner_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </span>
-                    ) : (
-                      <span className="no-owner">Unassigned</span>
-                    )}
-                  </td>
-                  <td className="sla-col">
-                    {getSLABadge(item.sla_status, item.days_remaining)}
-                  </td>
-                  <td className="priority-col">
-                    {getPriorityBadge(item.priority)}
-                  </td>
-                  <td className="evidence-col">
-                    {item.evidence_count > 0 ? (
-                      <span className="evidence-count">{item.evidence_count}</span>
-                    ) : (
-                      <span className="no-evidence">—</span>
-                    )}
+                  <td className="created-col">
+                    {new Date(item.created_at).toLocaleString('en-IN', { 
+                      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true 
+                    })}
                   </td>
                 </tr>
               ))}
@@ -532,51 +520,7 @@ const UnifiedInbox: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden Demo Control Panel - Toggle with Alt+P */}
-      {showDemoPanel && (
-        <div className="demo-control-panel">
-          <div className="demo-panel-header">
-            <span>🎬 Demo Controls</span>
-            <button onClick={() => setShowDemoPanel(false)}>×</button>
-          </div>
-          <div className="demo-panel-content">
-            <p className="demo-hint">Use keyboard shortcuts for specific complaints:</p>
-            <div className="demo-shortcuts">
-              <button 
-                className="demo-trigger-btn"
-                onClick={() => triggerDemoForward(0)}
-                disabled={demoTriggering}
-              >
-                <kbd>Alt+1</kbd> KYC Update Request
-              </button>
-              <button 
-                className="demo-trigger-btn"
-                onClick={() => triggerDemoForward(1)}
-                disabled={demoTriggering}
-              >
-                <kbd>Alt+2</kbd> Interest Overcharge
-              </button>
-              <button 
-                className="demo-trigger-btn"
-                onClick={() => triggerDemoForward(2)}
-                disabled={demoTriggering}
-              >
-                <kbd>Alt+3</kbd> Collection Harassment
-              </button>
-            </div>
-            <p className="demo-note">
-              {demoTriggering ? '⏳ Creating obligation...' : 'New obligations appear with highlight animation'}
-            </p>
-          </div>
-        </div>
-      )}
 
-      {/* Floating demo indicator (only when triggering) */}
-      {demoTriggering && (
-        <div className="demo-processing-indicator">
-          📧 Processing incoming email...
-        </div>
-      )}
 
       {/* Classification Modal */}
       {classifyModal.open && classifyModal.item && (

@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { authenticate } from '../middlewares/auth';
 import { AuthenticatedRequest } from '../types/requests';
 import classifierService from '../services/classifierService';
+import { createAuditLog } from '../services/auditService';
 
 const router = Router();
 
@@ -1134,7 +1135,8 @@ Please resolve this urgently.
 
 Thanks,
 Rajesh Kumar`,
-    from_email: "rajesh.kumar@gmail.com"
+    from_email: "rajesh.kumar@gmail.com",
+    category_code: "KYC"
   },
   {
     subject: "Incorrect interest charged on loan EMI",
@@ -1150,7 +1152,8 @@ Please refund the excess amount immediately.
 
 Regards,
 Priya Sharma`,
-    from_email: "priya.sharma@outlook.com"
+    from_email: "priya.sharma@outlook.com",
+    category_code: "LOAN_DISPUTE"
   },
   {
     subject: "Harassment by collection agent",
@@ -1168,7 +1171,8 @@ Agent Name: Vikram (as per his introduction)
 Immediate action required.
 
 - Amit Patel`,
-    from_email: "amit.patel@company.com"
+    from_email: "amit.patel@company.com",
+    category_code: "RECOVERY"
   }
 ];
 
@@ -1186,6 +1190,7 @@ router.post('/demo-forward', authenticate, async (req: AuthenticatedRequest, res
     let { subject, body, from_email, complaintIndex }: DemoEmailPayload & { complaintIndex?: number } = req.body;
     
     // If no content provided, use specified index or random demo complaint
+    let categoryCode = '';
     if (!subject || !body) {
       let selectedDemo;
       if (typeof complaintIndex === 'number' && complaintIndex >= 0 && complaintIndex < DEMO_COMPLAINTS.length) {
@@ -1198,6 +1203,7 @@ router.post('/demo-forward', authenticate, async (req: AuthenticatedRequest, res
       subject = selectedDemo.subject;
       body = selectedDemo.body;
       from_email = selectedDemo.from_email;
+      categoryCode = selectedDemo.category_code;
     }
 
     const messageId = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1212,19 +1218,45 @@ router.post('/demo-forward', authenticate, async (req: AuthenticatedRequest, res
     // Small delay for "processing feel" during demo (800ms)
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    await pool.query(`
-      INSERT INTO obligations (id, title, description, organization_id, created_by, status, ingestion_source, external_reference_id)
-      VALUES ($1, $2, $3, $4, $5, 'open', 'email', $6)
-    `, [obligationId, subject, body.substring(0, 2000), organizationId, userId, from_email || 'demo@forward.trey.in']);
+    // Look up category for auto-classification
+    let categoryId: string | null = null;
+    let department: string | null = null;
+    let priority: string = 'medium';
+    let slaDays = 7;
+    if (categoryCode) {
+      const catResult = await pool.query(
+        'SELECT id, department, priority, default_sla_days FROM complaint_categories WHERE code = $1',
+        [categoryCode]
+      );
+      if (catResult.rows.length > 0) {
+        categoryId = catResult.rows[0].id;
+        department = catResult.rows[0].department;
+        priority = catResult.rows[0].priority;
+        slaDays = catResult.rows[0].default_sla_days;
+      }
+    }
 
-    // SLA - 7 days for demo
+    await pool.query(`
+      INSERT INTO obligations (id, title, description, organization_id, created_by, status, ingestion_source, external_reference_id, category_id, classification_confidence, classification_source, department, priority)
+      VALUES ($1, $2, $3, $4, $5, 'open', 'email', $6, $7, $8, $9, $10, $11)
+    `, [obligationId, subject, body.substring(0, 2000), organizationId, userId, from_email || 'demo@forward.trey.in', categoryId, categoryId ? 'high' : 'unclassified', categoryId ? 'auto' : null, department, priority]);
+
+    // SLA based on category default
     const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 7);
+    dueDate.setDate(dueDate.getDate() + slaDays);
+    const slaId = uuidv4();
     
     await pool.query(`
       INSERT INTO slas (id, obligation_id, due_date, created_by, is_current)
       VALUES ($1, $2, $3, $4, true)
-    `, [uuidv4(), obligationId, dueDate.toISOString().split('T')[0], userId]);
+    `, [slaId, obligationId, dueDate.toISOString().split('T')[0], userId]);
+
+    // Auto-assign owner (current user)
+    const ownerId = uuidv4();
+    await pool.query(`
+      INSERT INTO obligation_owners (id, obligation_id, user_id, assigned_by, is_current)
+      VALUES ($1, $2, $3, $4, true)
+    `, [ownerId, obligationId, userId, userId]);
 
     // Log ingestion
     await pool.query(`
@@ -1232,13 +1264,39 @@ router.post('/demo-forward', authenticate, async (req: AuthenticatedRequest, res
       VALUES ($1, 'email', $2, $3, $4, 'success', NOW())
     `, [uuidv4(), from_email || 'demo@forward.trey.in', obligationId, JSON.stringify({ subject, from: from_email, demo: true })]);
 
-    console.log(`[Forward-Ingestion] ✓ Obligation created #${obligationNumber} (${obligationId})`);
+    // Create audit trail — this is what makes the Audit Timeline look real
+    await createAuditLog({
+      entityType: 'obligation', entityId: obligationId,
+      action: 'OBLIGATION_CREATED', performedBy: userId,
+      newValue: { title: subject, source: 'email', from: from_email }
+    });
+    if (categoryCode) {
+      await createAuditLog({
+        entityType: 'obligation', entityId: obligationId,
+        action: 'OBLIGATION_CLASSIFIED', performedBy: userId,
+        newValue: { category: categoryCode, department, confidence: 'high', source: 'auto' }
+      });
+    }
+    await createAuditLog({
+      entityType: 'sla', entityId: slaId,
+      action: 'SLA_CREATED', performedBy: userId,
+      newValue: { due_date: dueDate.toISOString().split('T')[0], days: slaDays }
+    });
+    await createAuditLog({
+      entityType: 'obligation_owner', entityId: ownerId,
+      action: 'OWNER_ASSIGNED', performedBy: userId,
+      newValue: { user_id: userId, auto_assigned: true }
+    });
+
+    console.log(`[Forward-Ingestion] ✓ Obligation created #${obligationNumber} (${obligationId}) [${categoryCode || 'unclassified'}]`);
 
     res.status(201).json({ 
       success: true, 
       obligation_id: obligationId,
       obligation_number: obligationNumber,
       title: subject,
+      category: categoryCode || null,
+      processing_time_ms: 800,
       message: 'Email forwarded successfully - obligation created'
     });
 
@@ -1259,6 +1317,151 @@ router.get('/demo-complaints', authenticate, async (_req: AuthenticatedRequest, 
       from: c.from_email
     }))
   });
+});
+
+// Reset demo data - clears all demo-generated obligations
+router.delete('/demo-reset', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const organizationId = req.user?.organization_id;
+    if (!organizationId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
+    }
+
+    console.log('[Demo-Reset] Clearing all obligations...');
+
+    // Temporarily disable ALL enforcement triggers for demo cleanup ONLY
+    // These triggers are critical for production - they prevent deletion of compliance records
+    // We disable them here ONLY for the demo-reset operation, then immediately re-enable
+    await pool.query(`
+      ALTER TABLE slas DISABLE TRIGGER trg_prevent_sla_delete;
+      ALTER TABLE obligation_owners DISABLE TRIGGER trg_prevent_owner_delete;
+      ALTER TABLE obligations DISABLE TRIGGER trg_prevent_obligation_delete;
+      ALTER TABLE evidence DISABLE TRIGGER trg_prevent_evidence_delete;
+      ALTER TABLE audit_logs DISABLE TRIGGER trg_audit_log_immutable;
+    `);
+
+    try {
+      // Delete in correct order (foreign key dependencies)
+      // Delete audit logs for ALL related entity types (obligation, sla, obligation_owner)
+      await pool.query(`DELETE FROM ingestion_logs WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1)`, [organizationId]);
+      await pool.query(`DELETE FROM audit_logs WHERE entity_type = 'obligation' AND entity_id IN (SELECT id FROM obligations WHERE organization_id = $1)`, [organizationId]);
+      await pool.query(`DELETE FROM audit_logs WHERE entity_type = 'sla' AND entity_id IN (SELECT id FROM slas WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1))`, [organizationId]);
+      await pool.query(`DELETE FROM audit_logs WHERE entity_type = 'obligation_owner' AND entity_id IN (SELECT id FROM obligation_owners WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1))`, [organizationId]);
+      await pool.query(`DELETE FROM evidence WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1)`, [organizationId]);
+      await pool.query(`DELETE FROM slas WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1)`, [organizationId]);
+      await pool.query(`DELETE FROM obligation_owners WHERE obligation_id IN (SELECT id FROM obligations WHERE organization_id = $1)`, [organizationId]);
+      const result = await pool.query(`DELETE FROM obligations WHERE organization_id = $1`, [organizationId]);
+
+      console.log(`[Demo-Reset] ✓ Cleared ${result.rowCount} obligations`);
+
+      res.json({ 
+        success: true, 
+        message: `Cleared ${result.rowCount} obligations`,
+        deleted: result.rowCount
+      });
+    } finally {
+      // ALWAYS re-enable triggers, even if deletion fails
+      await pool.query(`
+        ALTER TABLE obligations ENABLE TRIGGER trg_prevent_obligation_delete;
+        ALTER TABLE obligation_owners ENABLE TRIGGER trg_prevent_owner_delete;
+        ALTER TABLE slas ENABLE TRIGGER trg_prevent_sla_delete;
+        ALTER TABLE evidence ENABLE TRIGGER trg_prevent_evidence_delete;
+        ALTER TABLE audit_logs ENABLE TRIGGER trg_audit_log_immutable;
+      `);
+      console.log('[Demo-Reset] Enforcement triggers re-enabled');
+    }
+  } catch (error: any) {
+    console.error('[Demo-Reset] Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Pre-existing obligations for demo context
+const SEED_OBLIGATIONS = [
+  { title: "EMI not updated — auto-debit issue", from: "sunil.verma@yahoo.com", daysAgo: 4, slaDays: 10, category: "LOAN_DISPUTE" },
+  { title: "Loan agreement copy missing", from: "meena.reddy@gmail.com", daysAgo: 3, slaDays: 8, category: "SERVICE_REQUEST" },
+  { title: "KYC verification pending", from: "bala.krishnan@outlook.com", daysAgo: 2, slaDays: 7, category: "KYC" },
+  { title: "Incorrect NACH debit", from: "deepika.nair@gmail.com", daysAgo: 2, slaDays: 9, category: "LOAN_DISPUTE" },
+  { title: "Harassment by agent (customer report)", from: "rohan.gupta@company.com", daysAgo: 1, slaDays: 5, category: "RECOVERY" }
+];
+
+router.post('/demo-seed', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const organizationId = req.user?.organization_id;
+    if (!userId || !organizationId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
+    }
+
+    console.log('[Demo-Seed] Creating pre-existing obligations...');
+    const created: string[] = [];
+
+    for (const seed of SEED_OBLIGATIONS) {
+      const obligationId = uuidv4();
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - seed.daysAgo);
+
+      // Look up category
+      let categoryId: string | null = null;
+      let department: string | null = null;
+      let priority: string = 'medium';
+      if (seed.category) {
+        const catResult = await pool.query(
+          'SELECT id, department, priority FROM complaint_categories WHERE code = $1',
+          [seed.category]
+        );
+        if (catResult.rows.length > 0) {
+          categoryId = catResult.rows[0].id;
+          department = catResult.rows[0].department;
+          priority = catResult.rows[0].priority;
+        }
+      }
+      
+      await pool.query(`
+        INSERT INTO obligations (id, title, description, organization_id, created_by, status, ingestion_source, external_reference_id, created_at, category_id, classification_confidence, classification_source, department, priority)
+        VALUES ($1, $2, $3, $4, $5, 'open', 'email', $6, $7, $8, $9, $10, $11, $12)
+      `, [obligationId, seed.title, `Complaint received via email from ${seed.from}`, organizationId, userId, seed.from, createdAt.toISOString(), categoryId, categoryId ? 'high' : 'unclassified', categoryId ? 'auto' : null, department, priority]);
+
+      const dueDate = new Date(createdAt);
+      dueDate.setDate(dueDate.getDate() + seed.slaDays);
+      const slaId = uuidv4();
+      
+      await pool.query(`
+        INSERT INTO slas (id, obligation_id, due_date, created_by, is_current)
+        VALUES ($1, $2, $3, $4, true)
+      `, [slaId, obligationId, dueDate.toISOString().split('T')[0], userId]);
+
+      // Auto-assign owner
+      const ownerId = uuidv4();
+      await pool.query(`
+        INSERT INTO obligation_owners (id, obligation_id, user_id, assigned_by, is_current, assigned_at)
+        VALUES ($1, $2, $3, $4, true, $5)
+      `, [ownerId, obligationId, userId, userId, createdAt.toISOString()]);
+
+      await pool.query(`
+        INSERT INTO ingestion_logs (id, channel, source_identifier, obligation_id, raw_payload, status, processed_at)
+        VALUES ($1, 'email', $2, $3, $4, 'success', $5)
+      `, [uuidv4(), seed.from, obligationId, JSON.stringify({ subject: seed.title, from: seed.from, seed: true }), createdAt.toISOString()]);
+
+      // Audit trail for each seeded obligation
+      await createAuditLog({ entityType: 'obligation', entityId: obligationId, action: 'OBLIGATION_CREATED', performedBy: userId, newValue: { title: seed.title, source: 'email', from: seed.from } });
+      if (categoryId) {
+        await createAuditLog({ entityType: 'obligation', entityId: obligationId, action: 'OBLIGATION_CLASSIFIED', performedBy: userId, newValue: { category: seed.category, department, confidence: 'high', source: 'auto' } });
+      }
+      await createAuditLog({ entityType: 'sla', entityId: slaId, action: 'SLA_CREATED', performedBy: userId, newValue: { due_date: dueDate.toISOString().split('T')[0], days: seed.slaDays } });
+      await createAuditLog({ entityType: 'obligation_owner', entityId: ownerId, action: 'OWNER_ASSIGNED', performedBy: userId, newValue: { user_id: userId, auto_assigned: true } });
+
+      created.push(seed.title);
+      console.log(`[Demo-Seed] ✓ ${seed.title} [${seed.category}]`);
+    }
+
+    res.status(201).json({ success: true, created: created.length, items: created });
+  } catch (error: any) {
+    console.error('[Demo-Seed] Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 

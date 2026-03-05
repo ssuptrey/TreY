@@ -59,6 +59,11 @@ interface Obligation {
   created_by_name: string;
   daysRemaining: number | null;
   riskStatus: string;
+  category_code?: string;
+  category_name?: string;
+  category_department?: string;
+  category_priority?: string;
+  regulation_reference?: string;
 }
 
 interface ObligationData {
@@ -82,6 +87,7 @@ const ObligationDetail: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [showOverlay, setShowOverlay] = useState<boolean>(true);
   
   // Modal states
   const [showReassignModal, setShowReassignModal] = useState<boolean>(false);
@@ -96,7 +102,7 @@ const ObligationDetail: React.FC = () => {
         obligationsAPI.get(id!),
         usersAPI.list()
       ]);
-      setData(obligationRes.data.data as any || null);
+      setData(obligationRes.data as any || null);
       setUsers(usersRes.data.data || []);
     } catch (err) {
       setError('Failed to load obligation details');
@@ -108,6 +114,14 @@ const ObligationDetail: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Auto-hide overlay after 4 seconds
+  useEffect(() => {
+    if (showOverlay) {
+      const timer = setTimeout(() => setShowOverlay(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showOverlay]);
 
   if (loading) {
     return <div className="loading">Loading obligation details...</div>;
@@ -143,217 +157,240 @@ const ObligationDetail: React.FC = () => {
 
   return (
     <div className="obligation-detail-page">
-      {/* Enhanced Header with Severity Tag */}
-      <div className="page-header">
-        <div>
-          <Link to="/obligations" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>
-            ← Back to Obligations
-          </Link>
-          <h1 style={{ marginTop: '8px', marginBottom: '8px' }}>{obligation.title}</h1>
-          <div className="header-meta">
-            <span className={`severity-tag ${severityTag.class}`}>
+
+      {/* Demo Overlay — auto-fades */}
+      {showOverlay && (
+        <div className="demo-proof-overlay">
+          <span className="demo-proof-text">SLA assigned. Owner mapped. Logged for audit.</span>
+        </div>
+      )}
+
+      {/* Proof-of-Structure Card — hero summary */}
+      <div className="proof-structure-card">
+        <div className="proof-item">
+          <span className="proof-icon proof-icon--sla">S</span>
+          <div>
+            <span className="proof-label">SLA Due Date</span>
+            <span className="proof-value">
+              {currentSla ? new Date(currentSla.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not set'}
+            </span>
+          </div>
+        </div>
+        <div className="proof-divider" />
+        <div className="proof-item">
+          <span className="proof-icon proof-icon--cat">C</span>
+          <div>
+            <span className="proof-label">Category</span>
+            <span className="proof-value">{obligation.category_name || obligation.category_code || 'Unclassified'}</span>
+          </div>
+        </div>
+        <div className="proof-divider" />
+        <div className="proof-item">
+          <span className="proof-icon proof-icon--owner">O</span>
+          <div>
+            <span className="proof-label">Owner</span>
+            <span className="proof-value">{currentOwner ? currentOwner.owner_name : 'Unassigned'}</span>
+          </div>
+        </div>
+        {obligation.category_department && (
+          <>
+            <div className="proof-divider" />
+            <div className="proof-item">
+              <span className="proof-icon proof-icon--dept">D</span>
+              <div>
+                <span className="proof-label">Department</span>
+                <span className="proof-value">{obligation.category_department}</span>
+              </div>
+            </div>
+          </>
+        )}
+        <div className="proof-divider" />
+        <div className="proof-item">
+          <span className="proof-icon proof-icon--audit">A</span>
+          <div>
+            <span className="proof-label">Audit Entries</span>
+            <span className="proof-value">{auditTimeline.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="od-header">
+        <div className="od-header__left">
+          <Link to="/obligations" className="od-back-link">Back to Obligations</Link>
+          <h1 className="od-title">{obligation.title}</h1>
+          <div className="od-meta">
+            <span className={`od-severity od-severity--${severityTag.class}`}>
               {severityTag.label}
             </span>
             {currentOwner && (
-              <span className="owner-tag">
-                Owned by: <strong>{currentOwner.owner_name}</strong>
+              <span className="od-owner-pill">
+                Owned by <strong>{currentOwner.owner_name}</strong>
               </span>
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            className="btn btn-outline"
-            onClick={() => setShowExportPreview(true)}
-          >
-            Export Audit Package
-          </button>
-        </div>
+        <button className="od-export-btn" onClick={() => setShowExportPreview(true)}>
+          Export Audit Package
+        </button>
       </div>
 
-      {/* Two-Column Layout: Main Content + SLA Clock Sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px' }}>
-        {/* Left Column - Main Content */}
-        <div>
+      {/* Two-Column Layout */}
+      <div className="od-grid">
+        {/* Left Column */}
+        <div className="od-main">
           {/* Status Banner */}
-          <div className={`card status-${getRiskStatusClass()}`} style={{ 
-            borderLeft: `4px solid ${
-              getRiskStatusClass() === 'red' ? '#dc3545' :
-              getRiskStatusClass() === 'amber' ? '#ffc107' :
-              getRiskStatusClass() === 'green' ? '#28a745' : '#6c757d'
-            }`,
-            marginBottom: '24px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span className={`status-badge status-${getRiskStatusClass()}`}>
-                  {obligation.riskStatus}
-                </span>
-                <span style={{ marginLeft: '16px', fontSize: '14px' }}>
-                  Status: <strong>{obligation.status.toUpperCase()}</strong>
-                </span>
-                {currentSla && obligation.status === 'open' && (
-                  <span style={{ marginLeft: '16px', fontSize: '14px' }}>
-                    Due: <strong>{new Date(currentSla.due_date).toLocaleDateString()}</strong>
-                    {' '}
-                    <span className={`days-remaining ${
-                      obligation.daysRemaining !== null && obligation.daysRemaining < 0 ? 'negative' :
-                      obligation.daysRemaining !== null && obligation.daysRemaining <= 15 ? 'warning' : 'safe'
-                    }`}>
-                      ({obligation.daysRemaining !== null && obligation.daysRemaining < 0 
-                        ? `${Math.abs(obligation.daysRemaining)} days overdue`
-                        : `${obligation.daysRemaining} days remaining`})
-                    </span>
+          <div className={`od-status-banner od-status-banner--${getRiskStatusClass()}`}>
+            <div className="od-status-banner__left">
+              <span className={`od-risk-badge od-risk-badge--${getRiskStatusClass()}`}>
+                {obligation.riskStatus}
+              </span>
+              <span className="od-status-text">
+                Status: <strong>{obligation.status.toUpperCase()}</strong>
+              </span>
+              {currentSla && obligation.status === 'open' && (
+                <span className="od-due-text">
+                  Due: <strong>{new Date(currentSla.due_date).toLocaleDateString()}</strong>
+                  {' '}
+                  <span className={`od-days ${
+                    obligation.daysRemaining !== null && obligation.daysRemaining < 0 ? 'od-days--neg' :
+                    obligation.daysRemaining !== null && obligation.daysRemaining <= 15 ? 'od-days--warn' : 'od-days--ok'
+                  }`}>
+                    ({obligation.daysRemaining !== null && obligation.daysRemaining < 0 
+                      ? `${Math.abs(obligation.daysRemaining)} days overdue`
+                      : `${obligation.daysRemaining} days remaining`})
                   </span>
-                )}
-              </div>
-              {obligation.status === 'open' && (
-                <button className="btn btn-sm btn-secondary" onClick={() => setShowStatusModal(true)}>
-                  Change Status
-                </button>
+                </span>
               )}
             </div>
+            {obligation.status === 'open' && (
+              <button className="od-status-btn" onClick={() => setShowStatusModal(true)}>
+                Change Status
+              </button>
+            )}
           </div>
 
           {/* Obligation Details Card */}
-          <div className="card">
-            <div className="card-header">
+          <div className="od-card">
+            <div className="od-card__header">
               <h3>Obligation Details</h3>
             </div>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <div className="label">ID</div>
-                <div className="value" style={{ fontFamily: 'monospace', fontSize: '12px' }}>
-                  {obligation.id}
-                </div>
+            <div className="od-detail-grid">
+              <div className="od-detail-item">
+                <div className="od-detail-label">ID</div>
+                <div className="od-detail-value od-detail-value--mono">{obligation.id}</div>
               </div>
-              <div className="detail-item">
-                <div className="label">Regulation Tag</div>
-                <div className="value">{obligation.regulation_tag || '-'}</div>
+              <div className="od-detail-item">
+                <div className="od-detail-label">Regulation Tag</div>
+                <div className="od-detail-value">{obligation.regulation_tag || '—'}</div>
               </div>
-              <div className="detail-item">
-                <div className="label">Created At</div>
-                <div className="value">
+              <div className="od-detail-item">
+                <div className="od-detail-label">Created At</div>
+                <div className="od-detail-value">
                   {new Date(obligation.created_at).toLocaleString()}
-                  <span style={{ fontSize: '12px', color: '#666', marginLeft: '8px' }}>(immutable)</span>
+                  <span className="od-immutable-tag">immutable</span>
                 </div>
               </div>
-              <div className="detail-item">
-                <div className="label">Created By</div>
-                <div className="value">{obligation.created_by_name}</div>
+              <div className="od-detail-item">
+                <div className="od-detail-label">Created By</div>
+                <div className="od-detail-value">{obligation.created_by_name}</div>
               </div>
             </div>
             {obligation.description && (
-              <div style={{ marginTop: '16px' }}>
-                <div className="label">Description</div>
-                <p style={{ marginTop: '4px' }}>{obligation.description}</p>
+              <div className="od-description">
+                <div className="od-detail-label">Description</div>
+                <p className="od-description-text">{obligation.description}</p>
               </div>
             )}
           </div>
 
-          {/* NBFC Regulation Reference - Critical for compliance credibility */}
-          <div className="card regulation-reference-card">
-            <div className="card-header">
-              <h3>📋 Regulation Reference</h3>
-              <span className="status-badge status-blue">NBFC Compliance</span>
+          {/* NBFC Regulation Reference */}
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Regulation Reference</h3>
+              <span className="od-badge od-badge--blue">NBFC Compliance</span>
             </div>
-            <div className="regulation-details">
-              <div className="regulation-grid">
-                <div className="regulation-item">
-                  <div className="regulation-label">RBI Circular Number</div>
-                  <div className="regulation-value">
-                    {obligation.regulation_tag?.includes('RBI') 
-                      ? `RBI/2024-25/${obligation.id.toString().padStart(3, '0')}`
-                      : 'RBI/2024-25/001'}
-                  </div>
-                </div>
-                <div className="regulation-item">
-                  <div className="regulation-label">Master Direction / Act</div>
-                  <div className="regulation-value">
-                    {obligation.regulation_tag === 'RBI Master Direction' 
-                      ? 'Master Direction - Non-Banking Financial Company - Systemically Important Non-Deposit taking Company (Reserve Bank) Directions, 2016'
-                      : obligation.regulation_tag === 'Fair Practice Code'
-                      ? 'Fair Practices Code for NBFCs - RBI/DNBR/2016-17/45'
-                      : obligation.regulation_tag === 'KYC-AML Guidelines'
-                      ? 'Master Direction - Know Your Customer (KYC) Direction, 2016'
-                      : 'Scale Based Regulation (SBR) Framework for NBFCs'}
-                  </div>
-                </div>
-                <div className="regulation-item">
-                  <div className="regulation-label">Applicable Clause</div>
-                  <div className="regulation-value clause-highlight">
-                    Section 45-IA of RBI Act, 1934 • Chapter III, Clause 6(b)
-                  </div>
-                </div>
-                <div className="regulation-item penalty-item">
-                  <div className="regulation-label">Penalty Exposure</div>
-                  <div className="regulation-value penalty-value">
-                    <span className="penalty-icon">⚠️</span>
-                    Non-compliance: Up to ₹1 Crore per instance + potential license revocation
-                  </div>
+            <div className="od-reg-grid">
+              <div className="od-reg-item">
+                <div className="od-detail-label">RBI Circular Number</div>
+                <div className="od-detail-value">
+                  {obligation.regulation_tag?.includes('RBI') 
+                    ? `RBI/2024-25/${obligation.id.toString().padStart(3, '0')}`
+                    : 'RBI/2024-25/001'}
                 </div>
               </div>
-              <div className="regulation-source">
-                <span className="source-label">Source of Truth:</span>
-                <a 
-                  href="https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="source-link"
-                >
-                  RBI Master Directions Portal →
-                </a>
+              <div className="od-reg-item">
+                <div className="od-detail-label">Master Direction / Act</div>
+                <div className="od-detail-value">
+                  {obligation.regulation_tag === 'RBI Master Direction' 
+                    ? 'Master Direction - Non-Banking Financial Company - Systemically Important Non-Deposit taking Company (Reserve Bank) Directions, 2016'
+                    : obligation.regulation_tag === 'Fair Practice Code'
+                    ? 'Fair Practices Code for NBFCs - RBI/DNBR/2016-17/45'
+                    : obligation.regulation_tag === 'KYC-AML Guidelines'
+                    ? 'Master Direction - Know Your Customer (KYC) Direction, 2016'
+                    : 'Scale Based Regulation (SBR) Framework for NBFCs'}
+                </div>
               </div>
+              <div className="od-reg-item">
+                <div className="od-detail-label">Applicable Clause</div>
+                <div className="od-detail-value od-detail-value--highlight">
+                  Section 45-IA of RBI Act, 1934 &bull; Chapter III, Clause 6(b)
+                </div>
+              </div>
+              <div className="od-reg-item od-reg-item--penalty">
+                <div className="od-detail-label">Penalty Exposure</div>
+                <div className="od-detail-value od-detail-value--penalty">
+                  Non-compliance: Up to &#8377;1 Crore per instance + potential license revocation
+                </div>
+              </div>
+            </div>
+            <div className="od-reg-source">
+              <span className="od-reg-source__label">Source of Truth:</span>
+              <a href="https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx" target="_blank" rel="noopener noreferrer" className="od-reg-source__link">
+                RBI Master Directions Portal
+              </a>
             </div>
           </div>
 
-          {/* Ownership Timeline - New Enhanced Component */}
+          {/* Ownership Timeline */}
           <OwnershipTimeline 
             owners={ownerHistory}
             obligationCreatedAt={obligation.created_at}
           />
           {obligation.status === 'open' && (
-            <div style={{ marginTop: '-8px', marginBottom: '16px' }}>
-              <button className="btn btn-outline" onClick={() => setShowReassignModal(true)}>
+            <div className="od-action-row">
+              <button className="od-outline-btn" onClick={() => setShowReassignModal(true)}>
                 Reassign Owner
               </button>
             </div>
           )}
 
           {/* SLA History */}
-          <div className="card">
-            <div className="card-header">
+          <div className="od-card">
+            <div className="od-card__header">
               <h3>SLA History</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span className="immutable-badge">
-                  <span className="lock-icon">■</span>
-                  APPEND-ONLY
-                </span>
+              <div className="od-card__actions">
+                <span className="od-append-badge">APPEND-ONLY</span>
                 {obligation.status === 'open' && (
-                  <button className="btn btn-sm btn-outline" onClick={() => setShowExtendModal(true)}>
+                  <button className="od-outline-btn od-outline-btn--sm" onClick={() => setShowExtendModal(true)}>
                     Extend SLA
                   </button>
                 )}
               </div>
             </div>
-            <div className="timeline">
-              {slaHistory.map((sla, index) => (
-                <div key={sla.id} className="timeline-item">
-                  <div className="time">
-                    Created: {new Date(sla.created_at).toLocaleString()}
-                    {sla.is_current && <span className="status-badge status-green" style={{ marginLeft: '8px' }}>Current</span>}
-                  </div>
-                  <div className="action">Due Date: {new Date(sla.due_date).toLocaleDateString()}</div>
-                  <div className="details">
-                    Set by {sla.created_by_name}
+            <div className="od-timeline">
+              {slaHistory.map((sla) => (
+                <div key={sla.id} className="od-timeline-item">
+                  <div className="od-timeline-dot" />
+                  <div className="od-timeline-content">
+                    <div className="od-timeline-time">
+                      {new Date(sla.created_at).toLocaleString()}
+                      {sla.is_current && <span className="od-badge od-badge--green">Current</span>}
+                    </div>
+                    <div className="od-timeline-action">Due Date: {new Date(sla.due_date).toLocaleDateString()}</div>
+                    <div className="od-timeline-detail">Set by {sla.created_by_name}</div>
                     {sla.extension_reason && (
-                      <div style={{ 
-                        marginTop: '8px', 
-                        padding: '8px 12px', 
-                        backgroundColor: '#fff3cd', 
-                        borderLeft: '3px solid #ffc107',
-                        borderRadius: '4px'
-                      }}>
+                      <div className="od-extension-reason">
                         <strong>Extension Reason:</strong> {sla.extension_reason}
                       </div>
                     )}
@@ -363,7 +400,7 @@ const ObligationDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Evidence Section - New Enhanced Component */}
+          {/* Evidence Section */}
           <EvidenceList
             evidence={evidence}
             obligationId={id!}
@@ -373,19 +410,15 @@ const ObligationDetail: React.FC = () => {
           />
         </div>
 
-        {/* Right Column - Decision Log, SLA Clock & Audit Log */}
-        <div>
-          {/* DECISION LOG - Critical for Compliance Credibility */}
-          <div className="card decision-log-card">
-            <div className="card-header">
+        {/* Right Column */}
+        <div className="od-sidebar">
+          {/* Decision Record */}
+          <div className="od-card od-card--decision">
+            <div className="od-card__header">
               <h3>DECISION RECORD</h3>
-              <span className="immutable-badge">
-                <span className="lock-icon">■</span>
-                IMMUTABLE
-              </span>
+              <span className="od-append-badge">IMMUTABLE</span>
             </div>
-            <div className="decision-log">
-              {/* Show actual decisions from audit timeline */}
+            <div className="od-decisions">
               {auditTimeline.filter(log => 
                 ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action)
               ).length > 0 ? (
@@ -393,71 +426,67 @@ const ObligationDetail: React.FC = () => {
                   .filter(log => ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action))
                   .slice(0, 5)
                   .map((log) => (
-                    <div key={log.id} className="decision-item">
-                      <div className="decision-icon">
-                        {log.action === 'OWNER_REASSIGNED' && '→'}
-                        {log.action === 'SLA_EXTENDED' && '⟳'}
-                        {log.action === 'EVIDENCE_UPLOADED' && '↑'}
-                        {log.action === 'STATUS_CHANGED' && '●'}
+                    <div key={log.id} className="od-decision">
+                      <div className="od-decision__icon">
+                        {log.action === 'OWNER_REASSIGNED' && '\u2192'}
+                        {log.action === 'SLA_EXTENDED' && '\u27F3'}
+                        {log.action === 'EVIDENCE_UPLOADED' && '\u2191'}
+                        {log.action === 'STATUS_CHANGED' && '\u25CF'}
                         {log.action === 'ESCALATION_TRIGGERED' && '!'}
                       </div>
-                      <div className="decision-content">
-                        <div className="decision-action">
+                      <div className="od-decision__body">
+                        <div className="od-decision__action">
                           {log.action === 'OWNER_REASSIGNED' && `Reassigned to ${log.new_value?.new_owner || 'new owner'}`}
                           {log.action === 'SLA_EXTENDED' && `SLA extended to ${log.new_value?.new_due_date || 'new date'}`}
                           {log.action === 'EVIDENCE_UPLOADED' && `Evidence uploaded: ${log.new_value?.file_name || 'document'}`}
                           {log.action === 'STATUS_CHANGED' && `Status changed to ${log.new_value?.status || 'updated'}`}
                           {log.action === 'ESCALATION_TRIGGERED' && `Escalated to ${log.new_value?.level || 'L2'}`}
                         </div>
-                        <div className="decision-meta">
-                          <span className="decision-by">{log.performed_by_name}</span>
-                          <span className="decision-time">{new Date(log.timestamp).toLocaleString()}</span>
+                        <div className="od-decision__meta">
+                          <span>{log.performed_by_name}</span>
+                          <span>{new Date(log.timestamp).toLocaleString()}</span>
                         </div>
                         {log.new_value?.reason && (
-                          <div className="decision-reason">
-                            Reason: {log.new_value.reason}
-                          </div>
+                          <div className="od-decision__reason">Reason: {log.new_value.reason}</div>
                         )}
                       </div>
                     </div>
                   ))
               ) : (
                 <>
-                  <div className="decision-item">
-                    <div className="decision-icon">●</div>
-                    <div className="decision-content">
-                      <div className="decision-action">Obligation created</div>
-                      <div className="decision-meta">
-                        <span className="decision-by">{obligation.created_by_name}</span>
-                        <span className="decision-time">{new Date(obligation.created_at).toLocaleString()}</span>
+                  <div className="od-decision">
+                    <div className="od-decision__icon">{'\u25CF'}</div>
+                    <div className="od-decision__body">
+                      <div className="od-decision__action">Obligation created</div>
+                      <div className="od-decision__meta">
+                        <span>{obligation.created_by_name}</span>
+                        <span>{new Date(obligation.created_at).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
                   {currentOwner && (
-                    <div className="decision-item">
-                      <div className="decision-icon">→</div>
-                      <div className="decision-content">
-                        <div className="decision-action">Assigned to {currentOwner.owner_name}</div>
-                        <div className="decision-meta">
-                          <span className="decision-by">{currentOwner.assigned_by_name}</span>
-                          <span className="decision-time">{new Date(currentOwner.assigned_at).toLocaleString()}</span>
+                    <div className="od-decision">
+                      <div className="od-decision__icon">{'\u2192'}</div>
+                      <div className="od-decision__body">
+                        <div className="od-decision__action">Assigned to {currentOwner.owner_name}</div>
+                        <div className="od-decision__meta">
+                          <span>{currentOwner.assigned_by_name}</span>
+                          <span>{new Date(currentOwner.assigned_at).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
                   )}
                   {currentSla && (
-                    <div className="decision-item">
-                      <div className="decision-icon">⟳</div>
-                      <div className="decision-content">
-                        <div className="decision-action">SLA set: {new Date(currentSla.due_date).toLocaleDateString()}</div>
-                        <div className="decision-meta">
-                          <span className="decision-by">{currentSla.created_by_name}</span>
-                          <span className="decision-time">{new Date(currentSla.created_at).toLocaleString()}</span>
+                    <div className="od-decision">
+                      <div className="od-decision__icon">{'\u27F3'}</div>
+                      <div className="od-decision__body">
+                        <div className="od-decision__action">SLA set: {new Date(currentSla.due_date).toLocaleDateString()}</div>
+                        <div className="od-decision__meta">
+                          <span>{currentSla.created_by_name}</span>
+                          <span>{new Date(currentSla.created_at).toLocaleString()}</span>
                         </div>
                         {currentSla.extension_reason && (
-                          <div className="decision-reason">
-                            Reason: {currentSla.extension_reason}
-                          </div>
+                          <div className="od-decision__reason">Reason: {currentSla.extension_reason}</div>
                         )}
                       </div>
                     </div>
@@ -469,7 +498,7 @@ const ObligationDetail: React.FC = () => {
 
           {/* SLA Clock */}
           {currentSla && (
-            <div style={{ marginBottom: '24px' }}>
+            <div className="od-sla-clock-wrap">
               <SLAClock
                 dueDate={currentSla.due_date}
                 createdAt={obligation.created_at}
@@ -478,25 +507,25 @@ const ObligationDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Immutable Audit Timeline */}
-          <div className="card" style={{ position: 'sticky', top: '24px' }}>
-            <div className="card-header">
+          {/* Audit Timeline */}
+          <div className="od-card od-card--sticky">
+            <div className="od-card__header">
               <h3>Audit Timeline</h3>
-              <span className="immutable-badge">
-                <span className="lock-icon">■</span>
-                IMMUTABLE
-              </span>
+              <span className="od-append-badge">IMMUTABLE</span>
             </div>
-            <div className="timeline" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            <div className="od-timeline od-timeline--scroll">
               {auditTimeline.map((log) => (
-                <div key={log.id} className="timeline-item">
-                  <div className="time">{new Date(log.timestamp).toLocaleString()}</div>
-                  <div className="action">{log.action.replace(/_/g, ' ')}</div>
-                  <div className="details">
-                    by {log.performed_by_name}
-                    {log.new_value && typeof log.new_value === 'object' && log.new_value.reason && (
-                      <div>Reason: {log.new_value.reason}</div>
-                    )}
+                <div key={log.id} className="od-timeline-item">
+                  <div className="od-timeline-dot" />
+                  <div className="od-timeline-content">
+                    <div className="od-timeline-time">{new Date(log.timestamp).toLocaleString()}</div>
+                    <div className="od-timeline-action">{log.action.replace(/_/g, ' ')}</div>
+                    <div className="od-timeline-detail">
+                      by {log.performed_by_name}
+                      {log.new_value && typeof log.new_value === 'object' && log.new_value.reason && (
+                        <div>Reason: {log.new_value.reason}</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -836,7 +865,7 @@ const UploadEvidenceModal: React.FC<UploadEvidenceModalProps> = ({ obligationId,
                 </div>
                 <div className={`validation-badge ${validationStatus}`}>
                   {validationStatus === 'valid' && '✓ Valid'}
-                  {validationStatus === 'warning' && '⚠ Large file'}
+                  {validationStatus === 'warning' && '! Large file'}
                   {validationStatus === 'pending' && '○ Validating...'}
                 </div>
               </div>
@@ -1204,34 +1233,34 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
           <div className="export-preview-content">
             <div className="zip-preview">
               <div className="folder-structure">
-                <div className="folder-title">📁 {obligation.title.slice(0, 30)}_{obligation.id.slice(0, 8)}.zip</div>
+                <div className="folder-title">{obligation.title.slice(0, 30)}_{obligation.id.slice(0, 8)}.zip</div>
                 <div className="folder-tree">
                   <div className="tree-item folder">
-                    <span className="tree-icon">📁</span>
+                    <span className="tree-icon tree-icon--folder"></span>
                     <span className="tree-name">/audit_report</span>
                   </div>
                   <div className="tree-item file indent-1">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">obligation_report.pdf</span>
                     <span className="tree-meta">Complete audit trail</span>
                   </div>
                   <div className="tree-item file indent-1">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">ownership_history.csv</span>
                     <span className="tree-meta">{ownerHistory.length} records</span>
                   </div>
                   <div className="tree-item file indent-1">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">sla_history.csv</span>
                     <span className="tree-meta">{slaHistory.length} records</span>
                   </div>
                   <div className="tree-item folder">
-                    <span className="tree-icon">📁</span>
+                    <span className="tree-icon tree-icon--folder"></span>
                     <span className="tree-name">/evidence</span>
                   </div>
                   {evidence.slice(0, 5).map((ev, idx) => (
                     <div key={idx} className="tree-item file indent-1">
-                      <span className="tree-icon">📎</span>
+                      <span className="tree-icon tree-icon--attach"></span>
                       <span className="tree-name">{ev.file_name}</span>
                       <span className={`tree-badge ${ev.is_late ? 'late' : 'ontime'}`}>
                         {ev.is_late ? 'LATE' : 'ON-TIME'}
@@ -1239,21 +1268,21 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
                     </div>
                   ))}
                   <div className="tree-item file indent-1">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">evidence_manifest.json</span>
                     <span className="tree-meta">Timestamps & checksums</span>
                   </div>
                   <div className="tree-item folder">
-                    <span className="tree-icon">📁</span>
+                    <span className="tree-icon tree-icon--folder"></span>
                     <span className="tree-name">/audit_log</span>
                   </div>
                   <div className="tree-item file indent-1">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">complete_audit_trail.json</span>
                     <span className="tree-meta">All actions logged</span>
                   </div>
                   <div className="tree-item file">
-                    <span className="tree-icon">📄</span>
+                    <span className="tree-icon tree-icon--file"></span>
                     <span className="tree-name">MANIFEST.json</span>
                     <span className="tree-meta">Package integrity hash</span>
                   </div>

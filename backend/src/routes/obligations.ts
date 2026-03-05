@@ -259,11 +259,14 @@ router.get('/:id', authenticate, async (req: AuthenticatedRequest, res: Response
     const { id } = req.params;
     const organizationId = req.user!.organization_id;
 
-    // Get obligation
+    // Get obligation with category info
     const obligationResult = await pool.query(
-      `SELECT o.*, creator.name as created_by_name
+      `SELECT o.*, creator.name as created_by_name,
+              cc.code as category_code, cc.name as category_name, cc.department as category_department,
+              cc.priority as category_priority, cc.regulation_reference
        FROM obligations o
        JOIN users creator ON o.created_by = creator.id
+       LEFT JOIN complaint_categories cc ON cc.id = o.category_id
        WHERE o.id = $1 AND o.organization_id = $2`,
       [id, organizationId]
     );

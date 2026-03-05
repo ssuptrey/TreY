@@ -161,12 +161,12 @@ const IngestionCenter: React.FC = () => {
 
   const getChannelIcon = (channel: string) => {
     switch (channel) {
-      case 'csv': return '📊';
-      case 'email': return '📧';
-      case 'whatsapp': return '💬';
-      case 'api': return '🔌';
-      case 'forward': return '↪️';
-      default: return '📥';
+      case 'csv': return 'CSV';
+      case 'email': return 'EM';
+      case 'whatsapp': return 'WA';
+      case 'api': return 'API';
+      case 'forward': return 'FW';
+      default: return 'IN';
     }
   };
 
@@ -277,7 +277,7 @@ const IngestionCenter: React.FC = () => {
               <input {...getInputProps()} />
               {csvFile ? (
                 <div className="file-info">
-                  <span className="file-icon">📄</span>
+                  <span className="file-icon"></span>
                   <span className="file-name">{csvFile.name}</span>
                   <span className="file-size">({(csvFile.size / 1024).toFixed(1)} KB)</span>
                 </div>
@@ -285,7 +285,7 @@ const IngestionCenter: React.FC = () => {
                 <p>Drop the CSV file here...</p>
               ) : (
                 <div className="dropzone-content">
-                  <span className="upload-icon">📤</span>
+                  <span className="upload-icon"></span>
                   <p>Drag & drop a CSV file here, or click to select</p>
                   <span className="hint">Maximum 10MB</span>
                 </div>
@@ -665,7 +665,7 @@ X-API-Key: your_api_key
                             {log.status}
                           </span>
                           {log.error_message && (
-                            <span className="error-hint" title={log.error_message}>⚠️</span>
+                            <span className="error-hint" title={log.error_message}>!</span>
                           )}
                         </td>
                       </tr>

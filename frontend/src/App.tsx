@@ -19,8 +19,15 @@ import {
   IngestionCenter,
   UnifiedInbox
 } from './pages';
-import './styles/App.css';
-import './styles/enhanced-components.css';
+import './styles/global.css';
+import './styles/components.css';
+import './styles/Dashboard.css';
+import './styles/ObligationDetail.css';
+import './styles/IngestionCenter.css';
+import './styles/UnifiedInbox.css';
+import './styles/EvidenceWall.css';
+import './styles/MyTasks.css';
+import './styles/ObligationRegister.css';
 
 interface RouteWrapperProps {
   children: ReactNode;

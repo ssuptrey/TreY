@@ -60,7 +60,7 @@ const EvidenceList: React.FC<EvidenceListProps> = ({
             <span className="stat-label">On-Time</span>
           </div>
           <div className={`stat-item late ${lateCount > 0 ? 'has-late' : ''}`}>
-            <span className="stat-icon">⚠</span>
+            <span className="stat-icon">!</span>
             <span className="stat-value">{lateCount}</span>
             <span className="stat-label">Late</span>
           </div>

@@ -313,7 +313,7 @@ const SLAHeatmap: React.FC<SLAHeatmapProps> = ({ obligations = [] }) => {
                             <span className="late-badge">{obl.late_evidence_count} late</span>
                           )}
                           {(obl.evidence_count || 0) === 0 && (
-                            <span className="missing-evidence-flag">⚠ Missing</span>
+                            <span className="missing-evidence-flag">! Missing</span>
                           )}
                         </td>
                         <td className="action-cell">

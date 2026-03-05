@@ -14,7 +14,7 @@ interface ObligationMetadata {
   regulation_tag: string | null;
   owner_name: string | null;
   sla_due_date: string | null;
-  days_remaining: number | null;
+  days_remaining: number | null;  
   risk_status: string;
   evidence_count: number;
   created_at: string;

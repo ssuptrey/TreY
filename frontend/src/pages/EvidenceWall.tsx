@@ -171,11 +171,11 @@ const EvidenceWall: React.FC = () => {
   };
 
   const getFileIcon = (type: string): string => {
-    if (type.includes('pdf')) return '📄';
-    if (type.includes('image')) return '🖼️';
-    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
-    if (type.includes('word') || type.includes('document')) return '📝';
-    return '📁';
+    if (type.includes('pdf')) return 'PDF';
+    if (type.includes('image')) return 'IMG';
+    if (type.includes('excel') || type.includes('spreadsheet')) return 'XLS';
+    if (type.includes('word') || type.includes('document')) return 'DOC';
+    return 'FILE';
   };
 
   const getFileTypeLabel = (type: string): string => {
@@ -284,7 +284,7 @@ const EvidenceWall: React.FC = () => {
       {/* Late Evidence Alert */}
       {stats.late > 0 && (
         <div className="late-evidence-alert">
-          <div className="alert-icon">⚠</div>
+          <div className="alert-icon">!</div>
           <div className="alert-content">
             <strong>{stats.late} evidence files</strong> were uploaded after their obligation deadlines.
             This impacts compliance scoring and may be flagged during audits.
@@ -460,7 +460,7 @@ const EvidenceWall: React.FC = () => {
                 </td>
                 <td className="actions-cell">
                   <button className="action-btn" title="Download">↓</button>
-                  <button className="action-btn" title="View">👁</button>
+                  <button className="action-btn" title="View">View</button>
                   {e.status === 'pending' && (
                     <button className="action-btn verify" title="Verify">✓</button>
                   )}

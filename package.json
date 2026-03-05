@@ -4,7 +4,7 @@
   "description": "System of Record for Compliance Execution - Full Stack",
   "scripts": {
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "start:backend": "cd backend && npm start",
+    "start:backend": "cd backend && npm run dev",
     "start:frontend": "cd frontend && npm start",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "migrate": "cd backend && npm run migrate",
