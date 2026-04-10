@@ -1,90 +1,89 @@
 ﻿/* ============================================
-   PROOF-OF-STRUCTURE CARD â€” Demo Hero
+   LIVE INTAKE BANNER - complaint feel live
    ============================================ */
-.proof-structure-card {
+.od-intake-banner {
   display: flex;
   align-items: stretch;
   gap: 0;
-  padding: 18px 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #f9f9fb 100%);
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  background: #1c1c1e;
+  border-radius: 14px;
   margin-bottom: 24px;
-  animation: proofCardIn 0.5s ease-out forwards;
+  animation: intakeBannerIn 0.5s ease-out forwards;
+  overflow: hidden;
 }
 
-@keyframes proofCardIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes intakeBannerIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.proof-item {
+.od-intake-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 20px;
+  padding: 16px 20px;
   flex: 1;
   min-width: 0;
 }
 
-.proof-item > div {
+.od-intake-item > div {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.proof-icon {
-  width: 32px;
-  height: 32px;
+.od-intake-icon {
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   letter-spacing: 0.3px;
   flex-shrink: 0;
   color: #fff;
 }
 
-.proof-icon--sla  { background: #34c759; }
-.proof-icon--cat  { background: #ff9500; }
-.proof-icon--owner { background: #007aff; }
-.proof-icon--dept { background: #5856d6; }
-.proof-icon--audit { background: #af52de; }
+.od-intake-icon--source  { background: #007aff; }
+.od-intake-icon--time    { background: #34c759; }
+.od-intake-icon--status  { background: #ff9500; }
+.od-intake-icon--status-open    { background: #ff9500; }
+.od-intake-icon--status-closed  { background: #34c759; }
+.od-intake-icon--status-breached { background: #ff3b30; }
+.od-intake-icon--owner   { background: #5856d6; }
+.od-intake-icon--sla     { background: #af52de; }
 
-.proof-label {
-  font-size: 10px;
-  font-weight: 600;
+.od-intake-label {
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #8e8e93;
+  letter-spacing: 1px;
+  color: #636366;
 }
 
-.proof-value {
-  font-size: 15px;
+.od-intake-value {
+  font-size: 14px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: #f5f5f7;
   letter-spacing: -0.1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.proof-divider {
-  width: 1px;
-  background-color: #e5e5ea;
-  align-self: stretch;
-  margin: 4px 0;
+.od-intake-value--live {
+  color: #30d158;
 }
 
+.od-intake-divider {
+  width: 1px;
+  background-color: #3a3a3c;
+  align-self: stretch;
+}
 /* Demo Proof Overlay â€” floating text */
 .demo-proof-overlay {
   position: fixed;
@@ -1453,3 +1452,132 @@
   }
 }
 
+
+
+/* ============================================
+   FORENSIC AUDIT RECORD - enterprise grade
+   ============================================ */
+.od-card--audit {
+  border-top: 3px solid #1c1c1e;
+  background: #fafafa;
+}
+
+.od-card--audit .od-card__header {
+  background: #1c1c1e;
+  border-bottom: none;
+}
+
+.od-card--audit .od-card__header h3 {
+  color: #f5f5f7;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+}
+
+.od-audit-immutable {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #30d158;
+  background: rgba(48, 209, 88, 0.12);
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.od-audit-log {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.od-audit-entry {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #ebebef;
+  transition: background 0.15s;
+}
+.od-audit-entry:last-child { border-bottom: none; }
+.od-audit-entry:hover { background: #f2f2f7; }
+
+.od-audit-entry__time {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #636366;
+  white-space: nowrap;
+  min-width: 90px;
+  padding-top: 2px;
+}
+
+.od-audit-entry__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.od-audit-entry__event {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+
+.od-audit-entry__user {
+  font-size: 12px;
+  font-weight: 500;
+  color: #48484a;
+  margin-bottom: 4px;
+}
+
+.od-audit-entry__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.od-audit-entry__date {
+  font-size: 11px;
+  color: #8e8e93;
+}
+
+.od-audit-entry__hash {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8e8e93;
+  background: #e5e5ea;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+}
+
+.od-audit-entry__reason {
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: rgba(255, 159, 10, 0.06);
+  border-left: 3px solid #ff9f0a;
+  font-size: 11px;
+  color: #9a6700;
+  border-radius: 0 6px 6px 0;
+}
+
+.od-audit-empty {
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #8e8e93;
+}
+
+/* Responsive: intake banner stacks on mobile */
+@media (max-width: 900px) {
+  .od-intake-banner {
+    flex-wrap: wrap;
+  }
+  .od-intake-item {
+    flex: 1 1 45%;
+  }
+  .od-intake-divider {
+    display: none;
+  }
+}

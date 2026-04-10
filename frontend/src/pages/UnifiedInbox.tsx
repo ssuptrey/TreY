@@ -505,22 +505,12 @@ const UnifiedInbox: React.FC = () => {
       {/* Channel Stats Footer */}
       {stats && (
         <div className="channel-stats-footer">
-          <span className="channel-stat">
-            <span className="channel-icon email">E</span> Email: {stats.from_email}
-          </span>
-          <span className="channel-stat">
-            <span className="channel-icon whatsapp">W</span> WhatsApp: {stats.from_whatsapp}
-          </span>
-          <span className="channel-stat">
-            <span className="channel-icon api">A</span> API: {stats.from_api}
-          </span>
-          <span className="channel-stat">
-            <span className="channel-icon csv">C</span> CSV: {stats.from_csv}
-          </span>
+          <span className="channel-stat">Email: {stats.from_email}</span>
+          <span className="channel-stat">WhatsApp: {stats.from_whatsapp}</span>
+          <span className="channel-stat">API: {stats.from_api}</span>
+          <span className="channel-stat">CSV: {stats.from_csv}</span>
         </div>
       )}
-
-
 
       {/* Classification Modal */}
       {classifyModal.open && classifyModal.item && (

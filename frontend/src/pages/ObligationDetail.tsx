@@ -64,7 +64,27 @@ interface Obligation {
   category_department?: string;
   category_priority?: string;
   regulation_reference?: string;
+  ingestion_source?: string;
 }
+
+/** Produce a short fake hash from a string (demo only — not cryptographic) */
+const fakeHash = (input: string): string => {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) {
+    h = ((h << 5) - h + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(16).slice(0, 8).padStart(8, '0');
+};
+
+/** Human-friendly relative time */
+const timeAgo = (dateStr: string): string => {
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 5) return 'just now';
+  if (diff < 60) return `${Math.floor(diff)} seconds ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+  return `${Math.floor(diff / 86400)} days ago`;
+};
 
 interface ObligationData {
   obligation: Obligation;
@@ -165,51 +185,59 @@ const ObligationDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Proof-of-Structure Card — hero summary */}
-      <div className="proof-structure-card">
-        <div className="proof-item">
-          <span className="proof-icon proof-icon--sla">S</span>
+      {/* Live Intake Banner — makes the complaint feel captured in real-time */}
+      <div className="od-intake-banner">
+        <div className="od-intake-item">
+          <span className="od-intake-icon od-intake-icon--source">
+            {(obligation.ingestion_source || 'manual') === 'email' ? 'EM' :
+             (obligation.ingestion_source || 'manual') === 'whatsapp' ? 'WA' :
+             (obligation.ingestion_source || 'manual') === 'csv' ? 'CSV' :
+             (obligation.ingestion_source || 'manual') === 'api' ? 'API' :
+             (obligation.ingestion_source || 'manual') === 'forward' ? 'FW' : 'MAN'}
+          </span>
           <div>
-            <span className="proof-label">SLA Due Date</span>
-            <span className="proof-value">
-              {currentSla ? new Date(currentSla.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not set'}
+            <span className="od-intake-label">SOURCE</span>
+            <span className="od-intake-value">{(obligation.ingestion_source || 'manual').charAt(0).toUpperCase() + (obligation.ingestion_source || 'manual').slice(1)}</span>
+          </div>
+        </div>
+        <div className="od-intake-divider" />
+        <div className="od-intake-item">
+          <span className="od-intake-icon od-intake-icon--time">IN</span>
+          <div>
+            <span className="od-intake-label">INGESTED</span>
+            <span className="od-intake-value od-intake-value--live">{timeAgo(obligation.created_at)}</span>
+          </div>
+        </div>
+        <div className="od-intake-divider" />
+        <div className="od-intake-item">
+          <span className={`od-intake-icon od-intake-icon--status od-intake-icon--status-${obligation.status}`}>
+            {obligation.status === 'open' ? (obligation.category_name ? 'CL' : 'UC') : obligation.status === 'closed' ? 'OK' : '!!'}
+          </span>
+          <div>
+            <span className="od-intake-label">STATUS</span>
+            <span className="od-intake-value">
+              {obligation.category_name ? obligation.category_name : obligation.status === 'open' ? 'Unclassified' : obligation.status.charAt(0).toUpperCase() + obligation.status.slice(1)}
             </span>
           </div>
         </div>
-        <div className="proof-divider" />
-        <div className="proof-item">
-          <span className="proof-icon proof-icon--cat">C</span>
+        <div className="od-intake-divider" />
+        <div className="od-intake-item">
+          <span className="od-intake-icon od-intake-icon--owner">
+            {currentOwner ? currentOwner.owner_name.split(' ').map(n => n[0]).join('') : '--'}
+          </span>
           <div>
-            <span className="proof-label">Category</span>
-            <span className="proof-value">{obligation.category_name || obligation.category_code || 'Unclassified'}</span>
+            <span className="od-intake-label">OWNER</span>
+            <span className="od-intake-value">{currentOwner ? currentOwner.owner_name : 'Unassigned'}</span>
           </div>
         </div>
-        <div className="proof-divider" />
-        <div className="proof-item">
-          <span className="proof-icon proof-icon--owner">O</span>
+        <div className="od-intake-divider" />
+        <div className="od-intake-item">
+          <span className="od-intake-icon od-intake-icon--sla">SLA</span>
           <div>
-            <span className="proof-label">Owner</span>
-            <span className="proof-value">{currentOwner ? currentOwner.owner_name : 'Unassigned'}</span>
-          </div>
-        </div>
-        {obligation.category_department && (
-          <>
-            <div className="proof-divider" />
-            <div className="proof-item">
-              <span className="proof-icon proof-icon--dept">D</span>
-              <div>
-                <span className="proof-label">Department</span>
-                <span className="proof-value">{obligation.category_department}</span>
-              </div>
-            </div>
-          </>
-        )}
-        <div className="proof-divider" />
-        <div className="proof-item">
-          <span className="proof-icon proof-icon--audit">A</span>
-          <div>
-            <span className="proof-label">Audit Entries</span>
-            <span className="proof-value">{auditTimeline.length}</span>
+            <span className="od-intake-label">DUE DATE</span>
+            <span className="od-intake-value">
+              {currentSla ? new Date(currentSla.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not set'}
+            </span>
           </div>
         </div>
       </div>
@@ -507,28 +535,41 @@ const ObligationDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Audit Timeline */}
-          <div className="od-card od-card--sticky">
+          {/* Forensic Audit Record */}
+          <div className="od-card od-card--sticky od-card--audit">
             <div className="od-card__header">
-              <h3>Audit Timeline</h3>
-              <span className="od-append-badge">IMMUTABLE</span>
+              <h3>AUDIT RECORD</h3>
+              <span className="od-audit-immutable">IMMUTABLE</span>
             </div>
-            <div className="od-timeline od-timeline--scroll">
-              {auditTimeline.map((log) => (
-                <div key={log.id} className="od-timeline-item">
-                  <div className="od-timeline-dot" />
-                  <div className="od-timeline-content">
-                    <div className="od-timeline-time">{new Date(log.timestamp).toLocaleString()}</div>
-                    <div className="od-timeline-action">{log.action.replace(/_/g, ' ')}</div>
-                    <div className="od-timeline-detail">
-                      by {log.performed_by_name}
+            <div className="od-audit-log">
+              {auditTimeline.map((log) => {
+                const ts = new Date(log.timestamp);
+                const eventLabel = log.action.replace(/_/g, ' ');
+                const hash = fakeHash(log.id + log.action + log.timestamp);
+                return (
+                  <div key={log.id} className="od-audit-entry">
+                    <div className="od-audit-entry__time">
+                      {ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                    </div>
+                    <div className="od-audit-entry__body">
+                      <div className="od-audit-entry__event">{eventLabel}</div>
+                      <div className="od-audit-entry__user">{log.performed_by_name}</div>
+                      <div className="od-audit-entry__meta">
+                        <span className="od-audit-entry__date">
+                          {ts.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="od-audit-entry__hash">HASH: {hash}</span>
+                      </div>
                       {log.new_value && typeof log.new_value === 'object' && log.new_value.reason && (
-                        <div>Reason: {log.new_value.reason}</div>
+                        <div className="od-audit-entry__reason">Reason: {log.new_value.reason}</div>
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+              {auditTimeline.length === 0 && (
+                <div className="od-audit-empty">No audit entries yet</div>
+              )}
             </div>
           </div>
         </div>

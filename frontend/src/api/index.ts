@@ -173,7 +173,7 @@ export const usersAPI = {
 // ============================================
 export const auditAPI = {
   getForEntity: (entityType: string, entityId: string): Promise<AxiosResponse<ApiResponse<AuditLog[]>>> => 
-    api.get(`/audit/${entityType}/${entityId}`),
+    api.get(`/audit/resource/${entityType}/${entityId}`),
   
   list: (limit?: number): Promise<AxiosResponse<ApiResponse<AuditLog[]>>> => 
     api.get('/audit', { params: { limit } })

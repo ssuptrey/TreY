@@ -1,177 +1,93 @@
 // Obligation Controller - Request/Response handling for obligations
-import { Response, NextFunction } from 'express';
+import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/requests';
-
-interface ObligationControllerDeps {
-  obligationService: any;
-  obligationRepository: any;
-  auditRepository: any;
-}
+import { ObligationService } from '../services/obligationService';
 
 export class ObligationController {
-  private obligationService: any;
-  private obligationRepository: any;
-  private auditRepository: any;
+  private obligationService: ObligationService;
 
-  constructor(deps: ObligationControllerDeps) {
-    this.obligationService = deps.obligationService;
-    this.obligationRepository = deps.obligationRepository;
-    this.auditRepository = deps.auditRepository;
+  constructor() {
+    this.obligationService = new ObligationService();
   }
 
-  create = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  create = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
-      const organizationId = req.user?.organization_id;
-
-      if (!userId || !organizationId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const { title, description, owner_id, sla_deadline } = req.body;
-
       const result = await this.obligationService.create({
-        title,
-        description,
-        organization_id: organizationId,
-        created_by: userId,
-        owner_id,
-        sla_deadline
+        ...req.body,
+        userId: req.user!.id,
+        organizationId: req.user!.organization_id,
+        ipAddress: req.ipAddress,
+        userAgent: req.userAgent
       });
 
       if (!result.success) {
-        res.status(400).json({ success: false, error: result.error });
-        return;
-      }
-
-      await this.auditRepository.create({
-        user_id: userId,
-        action: 'OBLIGATION_CREATED',
-        resource_type: 'obligation',
-        resource_id: result.obligation.id,
-        metadata: { title, owner_id, sla_deadline }
-      });
-
-      res.status(201).json({
-        success: true,
-        data: result.obligation,
-        message: 'Obligation created successfully'
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  list = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const organizationId = req.user?.organization_id;
-
-      if (!organizationId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const obligations = await this.obligationRepository.findByOrganization(organizationId);
-
-      res.json({
-        success: true,
-        data: obligations
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  getById = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const organizationId = req.user?.organization_id;
-
-      if (!organizationId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const result = await this.obligationService.getDetails(id, organizationId);
-
-      if (!result.success) {
-        res.status(404).json({ success: false, error: result.error });
-        return;
-      }
-
-      res.json({
-        success: true,
-        data: result.obligation
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  getDashboard = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const organizationId = req.user?.organization_id;
-
-      if (!organizationId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const obligations = await this.obligationRepository.findWithSLARisk(organizationId);
-
-      const summary = {
-        total: obligations.length,
-        overdue: obligations.filter((o: any) => o.risk_level === 'overdue').length,
-        critical: obligations.filter((o: any) => o.risk_level === 'critical').length,
-        warning: obligations.filter((o: any) => o.risk_level === 'warning').length,
-        safe: obligations.filter((o: any) => o.risk_level === 'safe').length
-      };
-
-      res.json({
-        success: true,
-        data: {
-          obligations,
-          summary
+        if (result.error === 'ENFORCEMENT_VIOLATION') {
+          res.status(400).json({ error: result.error, message: result.message, violations: result.violations });
+          return;
         }
-      });
+        res.status(400).json({ error: result.error, message: result.message });
+        return;
+      }
+      res.status(201).json({ message: 'Obligation created successfully', obligation: result.obligation });
     } catch (error) {
-      next(error);
+      console.error('[OBLIGATIONS] Create error:', error);
+      res.status(500).json({ error: 'CREATE_ERROR', message: 'Failed to create obligation' });
     }
   };
 
-  updateStatus = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  list = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
-      const { status } = req.body;
-      const userId = req.user?.id;
-
-      if (!userId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const result = await this.obligationService.updateStatus(id, status);
-
-      if (!result.success) {
-        res.status(400).json({ success: false, error: result.error });
-        return;
-      }
-
-      await this.auditRepository.create({
-        user_id: userId,
-        action: 'OBLIGATION_STATUS_UPDATED',
-        resource_type: 'obligation',
-        resource_id: id,
-        metadata: { new_status: status }
-      });
-
-      res.json({
-        success: true,
-        message: 'Obligation status updated'
-      });
+      const obligations = await this.obligationService.list(req.user!.organization_id, req.query.status as string, req.query.ownerId as string);
+      res.json({ obligations, total: obligations.length });
     } catch (error) {
-      next(error);
+      console.error('[OBLIGATIONS] List error:', error);
+      res.status(500).json({ error: 'LIST_ERROR', message: 'Failed to list obligations' });
+    }
+  };
+
+  getById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const result = await this.obligationService.getDetails(req.params.id, req.user!.organization_id);
+      if (!result.success) {
+        res.status(404).json({ error: result.error, message: result.message });
+        return;
+      }
+      res.json(result.data);
+    } catch (error) {
+      console.error('[OBLIGATIONS] Get detail error:', error);
+      res.status(500).json({ error: 'GET_ERROR', message: 'Failed to get obligation details' });
+    }
+  };
+
+  updateStatus = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const result = await this.obligationService.updateStatus(
+        req.params.id, req.user!.organization_id, req.body.status, req.user!.id, req.ipAddress, req.userAgent
+      );
+      if (!result.success) {
+        res.status(result.error === 'NOT_FOUND' ? 404 : 400).json({ error: result.error, message: result.message });
+        return;
+      }
+      res.json({ message: result.message, obligation: result.obligation });
+    } catch (error) {
+      console.error('[OBLIGATIONS] Status update error:', error);
+      res.status(500).json({ error: 'UPDATE_ERROR', message: 'Failed to update obligation status' });
+    }
+  };
+
+  reassignOwner = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const result = await this.obligationService.reassignOwner(
+        req.params.id, req.user!.organization_id, req.body.newOwnerId, req.body.reason, req.user!.id, req.ipAddress, req.userAgent
+      );
+      if (!result.success) {
+        res.status(result.error === 'NOT_FOUND' ? 404 : 400).json({ error: result.error, message: result.message });
+        return;
+      }
+      res.json({ message: result.message, owner: result.owner });
+    } catch (error) {
+      console.error('[OBLIGATIONS] Reassign owner error:', error);
+      res.status(500).json({ error: 'REASSIGN_ERROR', message: 'Failed to reassign obligation owner' });
     }
   };
 }

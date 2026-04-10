@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="dashboard-container">
       <div className="page-header">
         <h1>SLA Risk Dashboard</h1>
         <a 
@@ -122,20 +122,10 @@ const Dashboard: React.FC = () => {
         </a>
       </div>
 
-      {/* NOTIFICATIONS PANEL - Real-time Enforcement Alerts */}
-      <NotificationsPanel obligations={data.obligations} />
-
-      {/* ADD #1 - IMMUTABLE AUDIT BANNER - Compact RBI-style */}
-      <div className="sor-seal compact">
-        <div className="seal-badge-inline">
-          <span className="seal-icon">■</span>
-          <span className="seal-text">SYSTEM OF RECORD</span>
-          <span className="seal-separator">|</span>
-          <span className="seal-desc">Immutable audit trail • Timestamp-locked evidence • Append-only operations</span>
-        </div>
-      </div>
-
-      {/* Summary Cards with RBI Risk Flags */}
+      <div className="dashboard-grid-layout">
+        {/* Main Content Column */}
+        <div className="dashboard-main-column">
+          {/* Summary Cards with RBI Risk Flags */}
       <div className="summary-grid">
         <div className="summary-card">
           <div className="number">{data.summary.total}</div>
@@ -490,6 +480,27 @@ const Dashboard: React.FC = () => {
             </table>
           </div>
         )}
+      </div>
+
+        </div>
+
+        {/* Right Content Column (Enforcement Alerter) */}
+        <div className="dashboard-side-column">
+          
+          {/* IMMUTABLE AUDIT BANNER - Vertical Style */}
+          <div className="sor-vertical-seal">
+            <span className="seal-icon">■</span>
+            <span className="seal-title">SYSTEM OF RECORD</span>
+            <hr className="seal-divider" />
+            <span className="seal-desc">Immutable audit ledger. Timestamp-locked operations.</span>
+          </div>
+
+          {/* NOTIFICATIONS PANEL - Shifted to side column */}
+          <div className="enforcement-alert-section">
+            <NotificationsPanel obligations={data.obligations} />
+          </div>
+          
+        </div>
       </div>
     </div>
   );

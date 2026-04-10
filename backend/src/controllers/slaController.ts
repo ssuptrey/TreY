@@ -1,142 +1,80 @@
 // SLA Controller - Request/Response handling for SLA operations
-import { Response, NextFunction } from 'express';
+import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/requests';
-
-interface SLAControllerDeps {
-  slaService: any;
-  slaRepository: any;
-  auditRepository: any;
-}
+import { SLAService } from '../services/slaService';
 
 export class SLAController {
-  private slaService: any;
-  private slaRepository: any;
-  private auditRepository: any;
+  private slaService: SLAService;
 
-  constructor(deps: SLAControllerDeps) {
-    this.slaService = deps.slaService;
-    this.slaRepository = deps.slaRepository;
-    this.auditRepository = deps.auditRepository;
+  constructor() {
+    this.slaService = new SLAService();
   }
 
-  create = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  extend = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const { obligationId } = req.params;
+      const { newDueDate, reason } = req.body;
+      const userId = req.user!.id;
+      const organizationId = req.user!.organization_id;
 
-      if (!userId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const { obligation_id, deadline } = req.body;
-
-      const result = await this.slaService.create({
-        obligation_id,
-        deadline: new Date(deadline)
-      });
-
-      if (!result.success) {
-        res.status(400).json({ success: false, error: result.error });
-        return;
-      }
-
-      await this.auditRepository.create({
-        user_id: userId,
-        action: 'SLA_CREATED',
-        resource_type: 'sla',
-        resource_id: result.sla.id,
-        metadata: { obligation_id, deadline }
-      });
-
-      res.status(201).json({
-        success: true,
-        data: result.sla,
-        message: 'SLA created successfully'
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  extend = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = req.user?.id;
-
-      if (!userId) {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-        return;
-      }
-
-      const { obligation_id, new_deadline, extension_reason } = req.body;
-
-      // SLA extension creates a new row (append-only per rulebook)
       const result = await this.slaService.extend({
-        obligation_id,
-        new_deadline: new Date(new_deadline),
-        extension_reason,
-        extended_by: userId
+        obligationId, newDueDate, reason, userId, organizationId, ipAddress: req.ipAddress, userAgent: req.userAgent
       });
 
       if (!result.success) {
-        res.status(400).json({ success: false, error: result.error });
+        res.status(result.error === 'NOT_FOUND' ? 404 : 400).json({ error: result.error, message: result.message });
         return;
       }
-
-      await this.auditRepository.create({
-        user_id: userId,
-        action: 'SLA_EXTENDED',
-        resource_type: 'sla',
-        resource_id: result.sla.id,
-        metadata: { 
-          obligation_id, 
-          new_deadline, 
-          extension_reason,
-          previous_sla_id: result.previous_sla_id
-        }
-      });
 
       res.status(201).json({
-        success: true,
-        data: result.sla,
-        message: 'SLA extended successfully'
+        message: 'SLA extended successfully',
+        previousSla: result.previousSla,
+        newSla: result.newSla
       });
     } catch (error) {
-      next(error);
+      console.error('[SLA] Extend error:', error);
+      res.status(500).json({ error: 'EXTEND_ERROR', message: 'Failed to extend SLA' });
     }
   };
 
-  getByObligation = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  getHistory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { obligationId } = req.params;
+      const organizationId = req.user!.organization_id;
 
-      const slas = await this.slaRepository.findByObligation(obligationId);
+      const result = await this.slaService.getHistory(obligationId, organizationId);
 
-      res.json({
-        success: true,
-        data: slas
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  getActive = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { obligationId } = req.params;
-
-      const sla = await this.slaRepository.findActiveByObligation(obligationId);
-
-      if (!sla) {
-        res.status(404).json({ success: false, error: 'No active SLA found' });
+      if (!result.success) {
+        res.status(404).json({ error: result.error, message: result.message });
         return;
       }
 
       res.json({
-        success: true,
-        data: sla
+        slaHistory: result.slaHistory,
+        currentSla: result.currentSla
       });
     } catch (error) {
-      next(error);
+      console.error('[SLA] History error:', error);
+      res.status(500).json({ error: 'HISTORY_ERROR', message: 'Failed to get SLA history' });
+    }
+  };
+
+  getDashboardRisk = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const organizationId = req.user!.organization_id;
+
+      const result = await this.slaService.getDashboardRisk(organizationId);
+
+      res.json({
+        summary: result.summary,
+        obligations: result.obligations,
+        breach_reasons: result.breach_reasons,
+        recent_breaches: result.recent_breaches,
+        discipline_score: result.discipline_score
+      });
+    } catch (error) {
+      console.error('[SLA] Dashboard error:', error);
+      res.status(500).json({ error: 'DASHBOARD_ERROR', message: 'Failed to get dashboard data' });
     }
   };
 }

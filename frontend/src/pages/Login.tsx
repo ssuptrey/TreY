@@ -33,7 +33,7 @@ const Login: React.FC = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Login</h1>
-        <p className="subtitle">Compliance Execution System</p>
+        <p className="subtitle">TreY</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 

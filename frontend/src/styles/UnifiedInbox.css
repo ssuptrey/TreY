@@ -32,80 +32,60 @@
   margin-top: 2px;
 }
 
-/* Stats Bar â€” iOS card style */
+/* Stats Bar - professional metric row */
 .inbox-stats-bar {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  align-items: stretch;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .stat-pill {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 10px 18px;
-  border-radius: 12px;
-  background-color: #ffffff;
+  align-items: flex-start;
+  padding: 14px 22px;
+  background: #ffffff;
   border: none;
+  border-right: 1px solid #f0f0f0;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 80px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s;
+  min-width: 90px;
+  gap: 2px;
+}
+
+.stat-pill:last-child {
+  border-right: none;
 }
 
 .stat-pill:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: #fafafa;
 }
 
 .stat-pill .stat-value {
   font-size: 22px;
   font-weight: 700;
   color: #1c1c1e;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .stat-pill .stat-label {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #8e8e93;
+  color: #aeaeb2;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.stat-pill.breached {
-  background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
-}
-
-.stat-pill.breached .stat-value {
-  color: #ff3b30;
-}
-
-.stat-pill.due-today {
-  background: linear-gradient(135deg, #fffcf0 0%, #fff3d6 100%);
-}
-
-.stat-pill.due-today .stat-value {
-  color: #ff9500;
-}
-
-.stat-pill.at-risk {
-  background: linear-gradient(135deg, #fff8f0 0%, #ffecd6 100%);
-}
-
-.stat-pill.at-risk .stat-value {
-  color: #ff6b00;
-}
-
-.stat-pill.unclassified,
-.stat-pill.unassigned {
-  background: linear-gradient(135deg, #f5f0ff 0%, #ece3ff 100%);
-}
-
+.stat-pill.breached .stat-value { color: #d70015; }
+.stat-pill.due-today .stat-value { color: #e07000; }
+.stat-pill.at-risk .stat-value   { color: #c96000; }
 .stat-pill.unclassified .stat-value,
-.stat-pill.unassigned .stat-value {
-  color: #af52de;
-}
+.stat-pill.unassigned .stat-value { color: #636366; }
 
 /* Filters â€” iOS grouped style */
 .inbox-filters {
@@ -407,37 +387,43 @@
 }
 
 /* SLA Column â€” iOS pill badges */
+/* SLA Column - compact enterprise tags */
 .sla-badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
   white-space: nowrap;
-  letter-spacing: -0.1px;
+  letter-spacing: 0.3px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  border: 1px solid transparent;
 }
 
 .sla-breached {
-  background-color: #ff3b30;
-  color: white;
+  background: #1c1c1e;
+  color: #ff453a;
+  border-color: #3a3a3c;
 }
 
 .sla-due-today {
-  background-color: #ff9500;
-  color: white;
+  background: transparent;
+  color: #e07000;
+  border-color: rgba(224, 112, 0, 0.4);
 }
 
 .sla-at-risk {
-  background-color: #fff3d6;
-  color: #cc7a00;
+  background: transparent;
+  color: #8e6400;
+  border-color: rgba(142, 100, 0, 0.3);
 }
 
 .sla-on-track {
-  background-color: #e8faf0;
-  color: #00875a;
+  background: transparent;
+  color: #aeaeb2;
+  border-color: #e5e5ea;
 }
 
-/* Priority Column â€” iOS pill style */
 .priority-badge {
   display: inline-block;
   padding: 3px 8px;
@@ -489,39 +475,23 @@
 .channel-stats-footer {
   display: flex;
   gap: 24px;
-  padding: 14px 20px;
-  background-color: #ffffff;
-  border: none;
-  border-radius: 14px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: #8e8e93;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 12px 4px 0;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #aeaeb2;
 }
 
 .channel-stat {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 .channel-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
+  display: none;
 }
-
-.channel-icon.email { background-color: #4285f4; }
-.channel-icon.whatsapp { background-color: #25d366; }
-.channel-icon.api { background-color: #6c757d; }
-.channel-icon.csv { background-color: #fd7e14; }
 
 /* Classification Modal â€” iOS */
 .classify-modal {

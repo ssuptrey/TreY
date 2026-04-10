@@ -100,8 +100,8 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_mappings_phone ON whatsapp_mappings(phon
 CREATE INDEX IF NOT EXISTS idx_obligations_source ON obligations(ingestion_source);
 CREATE INDEX IF NOT EXISTS idx_obligations_external_ref ON obligations(external_reference_id);
 
--- Insert sample API key for testing (key: test_api_key_demo_123)
-INSERT INTO api_keys (id, organization_id, name, key_hash, description, created_at)
+-- Skip inserting api key here as there are no organizations yet.
+-- INSERT INTO api_keys (id, organization_id, name, key_hash, description, created_at)
 SELECT 
     gen_random_uuid(),
     (SELECT id FROM organizations LIMIT 1),
