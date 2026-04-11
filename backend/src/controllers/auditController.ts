@@ -9,11 +9,12 @@ interface AuditControllerDeps {
 
 export class AuditController {
   private auditRepository: any;
-  private exportService: any;
+  // @ts-ignore: used later
+  private _exportService: any;
 
   constructor(deps: AuditControllerDeps) {
     this.auditRepository = deps.auditRepository;
-    this.exportService = deps.exportService;
+    this._exportService = deps.exportService;
   }
 
   getLogs = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
