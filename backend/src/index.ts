@@ -26,6 +26,9 @@ import evidenceRoutes from './routes/evidence';
 import exportRoutes from './routes/export';
 import usersRoutes from './routes/users';
 import alertsRoutes from './routes/alerts';
+import auditRoutes from './routes/audit';
+import organizationsRoutes from './routes/organizations';
+import obligationOwnersRoutes from './routes/obligation-owners';
 
 // Import cron jobs
 import { startSLAAlertJob } from './jobs/slaAlertJob';
@@ -87,8 +90,9 @@ app.use('/api/sla', slaRoutes);
 app.use('/api/evidence', evidenceRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/alerts', alertsRoutes);
-
+app.use('/api/alerts', alertsRoutes);app.use('/api/audit', auditRoutes);
+app.use('/api/organizations', organizationsRoutes);
+app.use('/api/obligation-owners', obligationOwnersRoutes);
 // Error handling middleware
 interface ErrorWithMessage extends Error {
   message: string;
