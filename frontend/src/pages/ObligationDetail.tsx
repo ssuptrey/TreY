@@ -9,6 +9,7 @@ import { obligationsAPI, evidenceAPI, exportAPI, usersAPI, slaAPI } from '../api
 import SLAClock from '../components/SLAClock';
 import OwnershipTimeline from '../components/OwnershipTimeline';
 import EvidenceList from '../components/EvidenceList';
+import '../styles/EvidenceList.css';
 
 interface Owner {
   id: string;

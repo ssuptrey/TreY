@@ -1,0 +1,352 @@
+﻿/* ============================================
+   EVIDENCE COMPONENT STYLES
+   ============================================ */
+
+.evidence-section {
+  margin-top: 24px;
+}
+
+.evidence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-default);
+}
+
+.evidence-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.evidence-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.immutable-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.lock-icon {
+  font-size: 8px;
+}
+
+/* Evidence Stats */
+.evidence-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  min-width: 120px;
+}
+
+.stat-item.on-time {
+  border-left: 3px solid var(--risk-safe);
+}
+
+.stat-item.late.has-late {
+  border-left: 3px solid var(--risk-critical);
+  background: var(--primary-50);
+}
+
+.stat-item.percentage.critical {
+  border-color: var(--risk-critical);
+  color: var(--risk-critical);
+  background: var(--primary-50);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Late Warning Banner */
+.late-evidence-warning {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #FFF5F5;
+  border: 1px solid var(--risk-critical);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--risk-critical);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--risk-critical);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.warning-text {
+  font-size: 13px;
+  color: var(--text-base);
+  line-height: 1.4;
+}
+
+.warning-badge {
+  padding: 6px 12px;
+  background: var(--risk-critical);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Empty State */
+.evidence-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-default);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.empty-icon {
+  font-size: 24px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.empty-warning {
+  font-size: 12px;
+  color: var(--risk-critical);
+  background: #FFF5F5;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+/* Evidence List & Cards */
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.evidence-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.evidence-card.late {
+  border-left: 4px solid var(--risk-critical);
+}
+
+.evidence-card.on-time {
+  border-left: 4px solid var(--border-default);
+}
+
+.evidence-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.evidence-number {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding-top: 2px;
+}
+
+.evidence-main {
+  flex: 1;
+}
+
+.evidence-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.file-icon {
+  color: var(--secondary-500);
+  font-size: 14px;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-base);
+}
+
+.evidence-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.evidence-note {
+  font-size: 13px;
+  padding: 8px 12px;
+  background: var(--primary-50);
+  border-radius: 4px;
+  color: var(--text-base);
+}
+
+.note-label {
+  font-weight: 700;
+  margin-right: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* Status Column */
+.evidence-status {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  border-left: 1px solid var(--border-default);
+}
+
+.status-late {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.late-flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--risk-critical);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.late-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.late-impact {
+  font-size: 10px;
+  color: var(--risk-critical);
+  background: #FFF5F5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.status-on-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--risk-safe);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.evidence-actions {
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+}
+
+/* Footer Notice */
+.evidence-footer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-body);
+  border: 1px dashed var(--border-default);
+  border-radius: 6px;
+}
+
+.footer-icon {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
