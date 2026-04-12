@@ -127,9 +127,7 @@ app.use((err: ErrorWithMessage, _req: Request, res: Response, _next: NextFunctio
   
   res.status(500).json({
     error: 'INTERNAL_ERROR',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An internal error occurred' 
-      : err.message
+    message: err.message, stack: err.stack
   });
 });
 
