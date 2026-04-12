@@ -13,10 +13,9 @@ interface DatabaseConfig extends PoolConfig {
 }
 
 // Support both cloud database (DATABASE_URL) and legacy config
-// OVERRIDE: Force IPv4 connection pooler to prevent Render connection drops
-const dbUrl = process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(':5432', ':6543') : 'postgresql://postgres:Guccigeng77@db.crkhtiuwxeznikxrqdnd.supabase.co:6543/postgres';
+const dbUrl = process.env.DATABASE_URL;
 
-const poolConfig: DatabaseConfig = true
+const poolConfig: DatabaseConfig = dbUrl
   ? {
       connectionString: dbUrl,
       ssl: {
