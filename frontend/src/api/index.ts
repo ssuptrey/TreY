@@ -15,7 +15,12 @@ import {
   ApiResponse 
 } from '../types';
 
-const API_BASE_URL: string = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+let tempApiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// Auto-append /api for live deployments if missing
+if (tempApiBaseUrl && !tempApiBaseUrl.endsWith('/api')) {
+  tempApiBaseUrl += '/api';
+}
+const API_BASE_URL: string = tempApiBaseUrl;
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

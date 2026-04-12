@@ -1,0 +1,40 @@
+services:
+  # ============================================
+  # 1. Backend Service (Node.js API)
+  # ============================================
+  - type: web
+    name: trey-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false # You will paste your Supabase URL in the Render dashboard manually for security
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: trey-frontend
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # ============================================
+  # 2. Frontend Service (React SPA)
+  # ============================================
+  - type: web
+    name: trey-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: trey-backend
+          envVarKey: RENDER_EXTERNAL_URL
