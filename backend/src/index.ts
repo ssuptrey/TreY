@@ -45,6 +45,7 @@ import ingestionRoutes from './routes/ingestion';
 import { startSLAAlertJob } from './jobs/slaAlertJob';
 
 const app: Express = express();
+app.set('trust proxy', 1);
 const PORT: number = parseInt(process.env.PORT || '3001', 10);
 
 // Security middleware
