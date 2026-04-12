@@ -41,8 +41,14 @@ const MyTasks: React.FC = () => {
 
   const loadTasks = async () => {
     try {
-      const response = await obligationsAPI.list({ owner: user?.id });
-      const apiTasks: Task[] = (response.data.data || []).map((obs: any) => ({
+      // Backend expects ownerId instead of owner
+      const response = await obligationsAPI.list({ ownerId: user?.id } as any);
+      
+      // The backend returns an object { obligations: [...] }, not just an array, 
+      // handle whatever format comes back to be safe.
+      const rawObligations = response.data.obligations || response.data.data || response.data || [];
+      
+      const apiTasks: Task[] = (Array.isArray(rawObligations) ? rawObligations : []).map((obs: any) => ({
         id: obs.id, // This is actually the obligation ID now
         obligation_id: obs.id,
         obligation_title: obs.title,
