@@ -46,7 +46,8 @@ const MyTasks: React.FC = () => {
       
       // The backend returns an object { obligations: [...] }, not just an array, 
       // handle whatever format comes back to be safe.
-      const rawObligations = response.data.obligations || response.data.data || response.data || [];
+      const responseData: any = response.data;
+      const rawObligations = responseData.obligations || responseData.data || responseData || [];
       
       const apiTasks: Task[] = (Array.isArray(rawObligations) ? rawObligations : []).map((obs: any) => ({
         id: obs.id, // This is actually the obligation ID now
