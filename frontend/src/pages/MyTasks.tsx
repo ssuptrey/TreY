@@ -73,7 +73,7 @@ const MyTasks: React.FC = () => {
     return {
       overdue: tasks.filter(t => t.days_remaining < 0 && t.status !== 'completed').length,
       today: tasks.filter(t => t.days_remaining === 0 && t.status !== 'completed').length,
-      upcoming: tasks.filter(t => t.days_remaining > 0 && t.days_remaining <= 7 && t.status !== 'completed').length,
+      upcoming: tasks.filter(t => t.days_remaining > 0 && t.status !== 'completed').length,
       pendingApprovals: tasks.filter(t => t.type === 'approval' && t.status === 'pending').length
     };
   };
@@ -85,7 +85,7 @@ const MyTasks: React.FC = () => {
       case 'today':
         return tasks.filter(t => t.days_remaining === 0 && t.status !== 'completed');
       case 'upcoming':
-        return tasks.filter(t => t.days_remaining > 0 && t.days_remaining <= 7 && t.status !== 'completed');
+        return tasks.filter(t => t.days_remaining > 0 && t.status !== 'completed');
       case 'approvals':
         return tasks.filter(t => t.type === 'approval' && t.status === 'pending');
       default:
@@ -172,7 +172,7 @@ const MyTasks: React.FC = () => {
           onClick={() => setActiveTab('upcoming')}
         >
           <div className="stat-number">{stats.upcoming}</div>
-          <div className="stat-label">This Week</div>
+          <div className="stat-label">Upcoming</div>
         </div>
         <div 
           className={`stat-tab ${activeTab === 'approvals' ? 'active' : ''}`}
