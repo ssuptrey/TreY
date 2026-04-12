@@ -646,7 +646,7 @@ X-API-Key: your_api_key
                     logs.map((log) => (
                       <tr key={log.id} className={`status-${log.status}`}>
                         <td className="time">
-                          {new Date(log.processed_at).toLocaleString()}
+                          {new Date(log.processed_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }
                         </td>
                         <td className="channel">
                           <span className="channel-badge">

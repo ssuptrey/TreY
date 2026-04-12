@@ -438,7 +438,7 @@ const Dashboard: React.FC = () => {
                     <td>{obligation.owner_name || 'Unassigned'}</td>
                     <td>
                       {obligation.due_date 
-                        ? new Date(obligation.due_date).toLocaleDateString()
+                        ? new Date(obligation.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
                         : 'No SLA'}
                     </td>
                     <td>

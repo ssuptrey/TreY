@@ -278,7 +278,7 @@ const ObligationDetail: React.FC = () => {
               </span>
               {currentSla && obligation.status === 'open' && (
                 <span className="od-due-text">
-                  Due: <strong>{new Date(currentSla.due_date).toLocaleDateString()}</strong>
+                  Due: <strong>{new Date(currentSla.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</strong>
                   {' '}
                   <span className={`od-days ${
                     obligation.daysRemaining !== null && obligation.daysRemaining < 0 ? 'od-days--neg' :
@@ -315,7 +315,7 @@ const ObligationDetail: React.FC = () => {
               <div className="od-detail-item">
                 <div className="od-detail-label">Created At</div>
                 <div className="od-detail-value">
-                  {new Date(obligation.created_at).toLocaleString()}
+                  {new Date(obligation.created_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }
                   <span className="od-immutable-tag">immutable</span>
                 </div>
               </div>
@@ -412,10 +412,10 @@ const ObligationDetail: React.FC = () => {
                   <div className="od-timeline-dot" />
                   <div className="od-timeline-content">
                     <div className="od-timeline-time">
-                      {new Date(sla.created_at).toLocaleString()}
+                      {new Date(sla.created_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }
                       {sla.is_current && <span className="od-badge od-badge--green">Current</span>}
                     </div>
-                    <div className="od-timeline-action">Due Date: {new Date(sla.due_date).toLocaleDateString()}</div>
+                    <div className="od-timeline-action">Due Date: {new Date(sla.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</div>
                     <div className="od-timeline-detail">Set by {sla.created_by_name}</div>
                     {sla.extension_reason && (
                       <div className="od-extension-reason">
@@ -472,7 +472,7 @@ const ObligationDetail: React.FC = () => {
                         </div>
                         <div className="od-decision__meta">
                           <span>{log.performed_by_name}</span>
-                          <span>{new Date(log.timestamp).toLocaleString()}</span>
+                          <span>{new Date(log.timestamp) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                         </div>
                         {log.new_value?.reason && (
                           <div className="od-decision__reason">Reason: {log.new_value.reason}</div>
@@ -488,7 +488,7 @@ const ObligationDetail: React.FC = () => {
                       <div className="od-decision__action">Obligation created</div>
                       <div className="od-decision__meta">
                         <span>{obligation.created_by_name}</span>
-                        <span>{new Date(obligation.created_at).toLocaleString()}</span>
+                        <span>{new Date(obligation.created_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                       </div>
                     </div>
                   </div>
@@ -499,7 +499,7 @@ const ObligationDetail: React.FC = () => {
                         <div className="od-decision__action">Assigned to {currentOwner.owner_name}</div>
                         <div className="od-decision__meta">
                           <span>{currentOwner.assigned_by_name}</span>
-                          <span>{new Date(currentOwner.assigned_at).toLocaleString()}</span>
+                          <span>{new Date(currentOwner.assigned_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                         </div>
                       </div>
                     </div>
@@ -508,10 +508,10 @@ const ObligationDetail: React.FC = () => {
                     <div className="od-decision">
                       <div className="od-decision__icon">{'\u27F3'}</div>
                       <div className="od-decision__body">
-                        <div className="od-decision__action">SLA set: {new Date(currentSla.due_date).toLocaleDateString()}</div>
+                        <div className="od-decision__action">SLA set: {new Date(currentSla.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</div>
                         <div className="od-decision__meta">
                           <span>{currentSla.created_by_name}</span>
-                          <span>{new Date(currentSla.created_at).toLocaleString()}</span>
+                          <span>{new Date(currentSla.created_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                         </div>
                         {currentSla.extension_reason && (
                           <div className="od-decision__reason">Reason: {currentSla.extension_reason}</div>
@@ -739,7 +739,7 @@ const ExtendSLAModal: React.FC<ExtendSLAModalProps> = ({ obligationId, currentDu
       <div className="modal" onClick={e => e.stopPropagation()}>
         <h2>Extend SLA</h2>
         <p style={{ color: '#666', marginBottom: '16px' }}>
-          Current due date: <strong>{new Date(currentDueDate).toLocaleDateString()}</strong>
+          Current due date: <strong>{new Date(currentDueDate) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</strong>
           <br />
           This will create a new SLA record. The previous SLA remains in history.
         </p>
@@ -919,7 +919,7 @@ const UploadEvidenceModal: React.FC<UploadEvidenceModalProps> = ({ obligationId,
             <div className="metadata-grid">
               <div className="metadata-item">
                 <span className="metadata-label">Upload Timestamp</span>
-                <span className="metadata-value">{new Date().toLocaleString()} IST</span>
+                <span className="metadata-value">{new Date() .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) } IST</span>
               </div>
               <div className="metadata-item">
                 <span className="metadata-label">Uploaded By</span>
@@ -1103,7 +1103,7 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({ obligationId, onC
                   </div>
                   <div className="summary-row">
                     <span className="summary-label">Timestamp:</span>
-                    <span className="summary-value">{new Date().toLocaleString()}</span>
+                    <span className="summary-value">{new Date() .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                   </div>
                 </div>
               </div>
@@ -1203,7 +1203,7 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
                     </div>
                     <div className="pdf-row">
                       <span className="pdf-label">Created:</span>
-                      <span className="pdf-value">{new Date(obligation.created_at).toLocaleString()}</span>
+                      <span className="pdf-value">{new Date(obligation.created_at) .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) }</span>
                     </div>
                   </div>
                 </div>
@@ -1219,7 +1219,7 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
                     {ownerHistory.slice(0, 3).map((owner, idx) => (
                       <div key={idx} className="pdf-mini-row">
                         <span>{owner.owner_name}</span>
-                        <span>{new Date(owner.assigned_at).toLocaleDateString()}</span>
+                        <span>{new Date(owner.assigned_at) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</span>
                         <span>{owner.assigned_by_name}</span>
                       </div>
                     ))}
@@ -1236,7 +1236,7 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
                     </div>
                     {slaHistory.slice(0, 3).map((sla, idx) => (
                       <div key={idx} className="pdf-mini-row">
-                        <span>{new Date(sla.due_date).toLocaleDateString()}</span>
+                        <span>{new Date(sla.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</span>
                         <span>{sla.created_by_name}</span>
                         <span>{sla.extension_reason || '-'}</span>
                       </div>
@@ -1261,7 +1261,7 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
 
                 <div className="pdf-footer">
                   <div className="pdf-footer-line">
-                    Generated: {new Date().toLocaleString()} | System of Record - Immutable Audit Trail
+                    Generated: {new Date() .toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) } | System of Record - Immutable Audit Trail
                   </div>
                   <div className="pdf-footer-line">
                     This document is cryptographically signed and admissible in regulatory proceedings

@@ -139,7 +139,7 @@ const Obligations: React.FC = () => {
                     <td>{obligation.owner_name || 'Unassigned'}</td>
                     <td>
                       {obligation.sla_due_date 
-                        ? new Date(obligation.sla_due_date).toLocaleDateString()
+                        ? new Date(obligation.sla_due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
                         : 'No SLA'}
                     </td>
                     <td>
@@ -152,7 +152,7 @@ const Obligations: React.FC = () => {
                       )}
                     </td>
                     <td>{obligation.evidence_count || 0}</td>
-                    <td>{new Date(obligation.created_at).toLocaleDateString()}</td>
+                    <td>{new Date(obligation.created_at) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</td>
                   </tr>
                 ))}
               </tbody>
