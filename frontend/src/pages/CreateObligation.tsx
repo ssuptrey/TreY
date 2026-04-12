@@ -12,7 +12,7 @@ interface FormData {
   description: string;
   regulationTag: string;
   ownerId: string;
-  slaDueDate: string;
+  dueDate: string;
 }
 
 interface User {
@@ -27,7 +27,7 @@ const CreateObligation: React.FC = () => {
     description: '',
     regulationTag: '',
     ownerId: '',
-    slaDueDate: ''
+    dueDate: ''
   });
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -43,7 +43,7 @@ const CreateObligation: React.FC = () => {
   const loadUsers = async (): Promise<void> => {
     try {
       const response = await usersAPI.list();
-      setUsers(response.data.users);
+      setUsers(response.data.data || []);
     } catch (err) {
       setError('Failed to load users');
     }
@@ -69,10 +69,10 @@ const CreateObligation: React.FC = () => {
       errors.push('Owner is required. Every obligation must have exactly ONE owner.');
     }
     
-    if (!formData.slaDueDate) {
+    if (!formData.dueDate) {
       errors.push('SLA due date is required. Every obligation must have a fixed SLA.');
     } else {
-      const dueDate = new Date(formData.slaDueDate);
+      const dueDate = new Date(formData.dueDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (dueDate <= today) {
@@ -99,7 +99,7 @@ const CreateObligation: React.FC = () => {
 
     try {
       const response = await obligationsAPI.create(formData);
-      navigate(`/obligations/${response.data.obligation.id}`);
+      navigate(`/obligations/${response.data.data?.id}`);
     } catch (err: any) {
       if (err.response?.data?.violations) {
         setViolations(err.response.data.violations);
@@ -214,8 +214,8 @@ const CreateObligation: React.FC = () => {
               </label>
               <input
                 type="date"
-                name="slaDueDate"
-                value={formData.slaDueDate}
+                name="dueDate"
+                value={formData.dueDate}
                 onChange={handleChange}
                 min={minDateStr}
                 required

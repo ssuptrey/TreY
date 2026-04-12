@@ -34,7 +34,7 @@ interface DashboardData {
 }
 
 const Dashboard: React.FC = () => {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
@@ -45,7 +45,7 @@ const Dashboard: React.FC = () => {
   const loadDashboard = async (): Promise<void> => {
     try {
       const response = await slaAPI.dashboard();
-      setData(response.data);
+      setData(response.data.data || null);
     } catch (err) {
       setError('Failed to load dashboard data');
     } finally {
@@ -144,7 +144,7 @@ const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.obligations.map((obligation) => (
+                {data.obligations.map((obligation: any) => (
                   <tr key={obligation.id}>
                     <td>
                       <span className={`status-badge status-${obligation.risk_status.toLowerCase()}`}>

@@ -7,6 +7,7 @@ export interface User {
   role: 'admin' | 'manager' | 'operator';
   organization_id: string;
   organization_name?: string;
+  organizationName?: string; // Add alias for backwards compat
 }
 
 export interface Organization {
@@ -30,6 +31,15 @@ export interface Obligation {
   sla_deadline?: string;
   days_remaining?: number;
   risk_level?: 'safe' | 'warning' | 'critical' | 'overdue';
+  // Dashboard Joined Fields
+  regulation_tag?: string | null;
+  sla_due_date?: string | null;
+  due_date?: string | null;
+  risk_status?: string;
+  evidence_count?: number;
+  late_evidence_count?: number;
+  daysRemaining?: number | null; // Alias
+  riskStatus?: string; // Alias
 }
 
 export interface SLA {
@@ -80,6 +90,9 @@ export interface ObligationOwner {
 export interface ApiResponse<T = any> {
   success?: boolean;
   data?: T;
+  users?: User[]; // Specifically for user responses
+  obligations?: Obligation[]; // Specifically for obligation responses
+  obligation?: Obligation;
   message?: string;
   error?: string;
 }
@@ -92,13 +105,13 @@ export interface LoginResponse {
 
 export interface DashboardSummary {
   total: number;
-  overdue: number;
-  critical: number;
-  warning: number;
-  safe: number;
+  green: number; // Corrected alias
+  amber: number; // Corrected alias
+  red: number; // Corrected alias
+  closed: number; // Corrected alias
 }
 
 export interface DashboardData {
-  obligations: Obligation[];
   summary: DashboardSummary;
+  obligations: any[]; // Avoid local interface overrides
 }

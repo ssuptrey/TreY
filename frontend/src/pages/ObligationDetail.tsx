@@ -75,8 +75,8 @@ interface User {
 
 const ObligationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [data, setData] = useState<ObligationData | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [data, setData] = useState<any | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   
@@ -92,8 +92,8 @@ const ObligationDetail: React.FC = () => {
         obligationsAPI.get(id!),
         usersAPI.list()
       ]);
-      setData(obligationRes.data);
-      setUsers(usersRes.data.users);
+      setData(obligationRes.data.data || null);
+      setUsers(usersRes.data.data || []);
     } catch (err) {
       setError('Failed to load obligation details');
     } finally {
@@ -276,7 +276,7 @@ const ObligationDetail: React.FC = () => {
               <h3>Owner History (Append-Only)</h3>
             </div>
             <div className="timeline">
-              {ownerHistory.map((owner) => (
+              {ownerHistory.map((owner: any) => (
                 <div key={owner.id} className="timeline-item">
                   <div className="time">
                     {new Date(owner.assigned_at).toLocaleString()}
@@ -305,7 +305,7 @@ const ObligationDetail: React.FC = () => {
               )}
             </div>
             <div className="timeline">
-              {slaHistory.map((sla) => (
+              {slaHistory.map((sla: any) => (
                 <div key={sla.id} className="timeline-item">
                   <div className="time">
                     Created: {new Date(sla.created_at).toLocaleString()}
@@ -337,7 +337,7 @@ const ObligationDetail: React.FC = () => {
               </div>
             ) : (
               <div>
-                {evidence.map(e => (
+                {evidence.map((e: any) => (
                   <div key={e.id} className={`evidence-item ${e.is_late ? 'late' : ''}`}>
                     <div className="file-info">
                       <div className="file-name">
@@ -378,7 +378,7 @@ const ObligationDetail: React.FC = () => {
               <h3>Audit Timeline</h3>
             </div>
             <div className="timeline" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-              {auditTimeline.map((log) => (
+              {auditTimeline.map((log: any) => (
                 <div key={log.id} className="timeline-item">
                   <div className="time">{new Date(log.timestamp).toLocaleString()}</div>
                   <div className="action">{log.action.replace(/_/g, ' ')}</div>

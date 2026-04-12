@@ -1,76 +1,60 @@
-// Audit Repository - Database access for audit log operations
 import { Pool } from 'pg';
 import { BaseRepository } from './BaseRepository';
-import { AuditLog } from '../types/models';
+import { AuditLogEntry, AuditLogParams, AuditLogResult } from '../services/auditService';
 
 export class AuditRepository extends BaseRepository {
   constructor(pool: Pool) {
     super(pool);
   }
 
-  async create(auditData: {
-    user_id: string;
-    action: string;
-    resource_type: string;
-    resource_id: string;
-    metadata?: Record<string, any>;
-  }): Promise<AuditLog> {
-    const result = await this.query<AuditLog>(
-      `INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
+  async create(auditData: AuditLogParams): Promise<AuditLogResult> {
+    const result = await this.query<AuditLogResult>(
+      `INSERT INTO audit_logs (
+        entity_type, entity_id, action, performed_by,
+        previous_value, new_value, ip_address, user_agent, additional_context
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id, timestamp`,
       [
-        auditData.user_id,
+        auditData.entityType,
+        auditData.entityId,
         auditData.action,
-        auditData.resource_type,
-        auditData.resource_id,
-        JSON.stringify(auditData.metadata || {})
+        auditData.performedBy,
+        auditData.previousValue ? JSON.stringify(auditData.previousValue) : null,
+        auditData.newValue ? JSON.stringify(auditData.newValue) : null,
+        auditData.ipAddress || null,
+        auditData.userAgent || null,
+        auditData.additionalContext ? JSON.stringify(auditData.additionalContext) : null
       ]
     );
     return result.rows[0];
   }
 
-  async findByResource(resourceType: string, resourceId: string): Promise<AuditLog[]> {
-    const result = await this.query<AuditLog>(
-      `SELECT al.*, u.email as user_email, u.full_name as user_name
-       FROM audit_logs al
-       LEFT JOIN users u ON al.user_id = u.id
-       WHERE al.resource_type = $1 AND al.resource_id = $2
-       ORDER BY al.timestamp DESC`,
-      [resourceType, resourceId]
+  async findByEntity(entityType: string, entityId: string): Promise<AuditLogEntry[]> {
+    const result = await this.query<AuditLogEntry>(
+      `SELECT 
+        al.*,
+        u.name as performed_by_name,
+        u.email as performed_by_email
+      FROM audit_logs al
+      JOIN users u ON al.performed_by = u.id
+      WHERE al.entity_type = $1 AND al.entity_id = $2
+      ORDER BY al.timestamp DESC`,
+      [entityType, entityId]
     );
     return result.rows;
   }
 
-  async findByUser(userId: string, limit: number = 100): Promise<AuditLog[]> {
-    const result = await this.query<AuditLog>(
-      'SELECT * FROM audit_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT $2',
-      [userId, limit]
-    );
-    return result.rows;
-  }
-
-  async findByOrganization(organizationId: string, limit: number = 100): Promise<AuditLog[]> {
-    const result = await this.query<AuditLog>(
-      `SELECT al.*, u.email as user_email, u.full_name as user_name
-       FROM audit_logs al
-       JOIN users u ON al.user_id = u.id
-       WHERE u.organization_id = $1
-       ORDER BY al.timestamp DESC
-       LIMIT $2`,
-      [organizationId, limit]
-    );
-    return result.rows;
-  }
-
-  async findRecent(limit: number = 50): Promise<AuditLog[]> {
-    const result = await this.query<AuditLog>(
-      `SELECT al.*, u.email as user_email, u.full_name as user_name
-       FROM audit_logs al
-       LEFT JOIN users u ON al.user_id = u.id
-       ORDER BY al.timestamp DESC
-       LIMIT $1`,
-      [limit]
+  async findByOrganization(organizationId: string, limit: number = 100, offset: number = 0): Promise<AuditLogEntry[]> {
+    const result = await this.query<AuditLogEntry>(
+      `SELECT 
+        al.*,
+        u.name as performed_by_name
+      FROM audit_logs al
+      JOIN users u ON al.performed_by = u.id
+      WHERE u.organization_id = $1
+      ORDER BY al.timestamp DESC
+      LIMIT $2 OFFSET $3`,
+      [organizationId, limit, offset]
     );
     return result.rows;
   }

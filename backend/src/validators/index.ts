@@ -7,3 +7,4 @@ export { userValidators } from './userValidator';
 export { organizationValidators } from './organizationValidator';
 export { obligationOwnerValidators } from './obligationOwnerValidator';
 export { handleValidation } from './validationMiddleware';
+export * from './auditValidator';

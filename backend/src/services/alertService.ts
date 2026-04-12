@@ -11,6 +11,7 @@
 // - Simple time-based notifications only
 
 import { pool } from '../config/database';
+import { AlertRepository } from '../repositories/alertRepository';
 import { createAuditLog } from './auditService';
 import nodemailer, { Transporter } from 'nodemailer';
 
@@ -24,6 +25,8 @@ const transporter: Transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASSWORD
   }
 });
+
+const alertRepository = new AlertRepository(pool);
 
 export interface ObligationAlert {
   id: string;
@@ -57,63 +60,14 @@ export interface AlertProcessingResult {
  * - 1 day after SLA breach (overdue)
  */
 export async function getObligationsNeedingAlerts(): Promise<ObligationAlert[]> {
-  const query = `
-    SELECT 
-      o.id,
-      o.title,
-      o.description,
-      o.regulation_tag,
-      o.status,
-      s.due_date,
-      s.id as sla_id,
-      (s.due_date - CURRENT_DATE) as days_remaining,
-      oo.user_id as owner_id,
-      u.name as owner_name,
-      u.email as owner_email,
-      org.name as organization_name,
-      CASE 
-        WHEN (s.due_date - CURRENT_DATE) = 7 THEN '7_DAYS_WARNING'
-        WHEN (s.due_date - CURRENT_DATE) = 3 THEN '3_DAYS_WARNING'
-        WHEN (s.due_date - CURRENT_DATE) = -1 THEN 'BREACH_ALERT'
-        ELSE NULL
-      END as alert_type
-    FROM obligations o
-    JOIN slas s ON o.id = s.obligation_id AND s.is_current = true
-    JOIN obligation_owners oo ON o.id = oo.obligation_id AND oo.is_current = true
-    JOIN users u ON oo.user_id = u.id
-    JOIN organizations org ON o.organization_id = org.id
-    WHERE o.status = 'open'
-      AND (
-        (s.due_date - CURRENT_DATE) = 7 OR
-        (s.due_date - CURRENT_DATE) = 3 OR
-        (s.due_date - CURRENT_DATE) = -1
-      )
-  `;
-
-  const result = await pool.query(query);
-  return result.rows as ObligationAlert[];
+  return await alertRepository.getObligationsNeedingAlerts();
 }
 
 /**
  * Check if alert was already sent today for this obligation
  */
 async function wasAlertSentToday(obligationId: string, alertType: string): Promise<boolean> {
-  const query = `
-    SELECT id 
-    FROM audit_logs 
-    WHERE entity_type = 'obligation'
-      AND entity_id = $1
-      AND action = $2
-      AND timestamp::date = CURRENT_DATE
-    LIMIT 1
-  `;
-
-  const result = await pool.query(query, [
-    obligationId,
-    `SLA_ALERT_${alertType}`
-  ]);
-
-  return result.rows.length > 0;
+  return await alertRepository.wasAlertSentToday(obligationId, alertType);
 }
 
 /**
@@ -311,47 +265,17 @@ export async function processSLAAlerts(): Promise<AlertProcessingResult> {
  * Get alert history for an obligation
  */
 export async function getAlertHistory(obligationId: string): Promise<any[]> {
-  const query = `
-    SELECT *
-    FROM audit_logs
-    WHERE entity_type = 'obligation'
-      AND entity_id = $1
-      AND action LIKE 'SLA_ALERT_%'
-    ORDER BY timestamp DESC
-  `;
-
-  const result = await pool.query(query, [obligationId]);
-  return result.rows;
+  return await alertRepository.getAlertHistory(obligationId);
 }
 
 /**
  * Manual alert trigger (for testing)
  */
 export async function sendManualAlert(obligationId: string, userId: string): Promise<boolean> {
-  const query = `
-    SELECT 
-      o.id,
-      o.title,
-      s.due_date,
-      (s.due_date - CURRENT_DATE) as days_remaining,
-      u.email as owner_email,
-      u.name as owner_name,
-      org.name as organization_name
-    FROM obligations o
-    JOIN slas s ON o.id = s.obligation_id AND s.is_current = true
-    JOIN obligation_owners oo ON o.id = oo.obligation_id AND oo.is_current = true
-    JOIN users u ON oo.user_id = u.id
-    JOIN organizations org ON o.organization_id = org.id
-    WHERE o.id = $1
-  `;
-
-  const result = await pool.query(query, [obligationId]);
-  
-  if (result.rows.length === 0) {
+  const obligation = await alertRepository.getObligationForManualAlert(obligationId);
+  if (!obligation) {
     throw new Error('Obligation not found');
   }
-
-  const obligation = result.rows[0] as ObligationAlert;
   obligation.alert_type = '7_DAYS_WARNING'; // Use standard template
 
   const emailSent = await sendAlertEmail(obligation);

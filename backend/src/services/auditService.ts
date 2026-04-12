@@ -5,6 +5,7 @@
 // This service provides centralized audit logging.
 
 import { pool } from '../config/database';
+import { AuditRepository } from '../repositories/auditRepository';
 
 export interface AuditLogParams {
   entityType: string;
@@ -43,6 +44,8 @@ export interface AuditLogEntry {
  * Create an audit log entry
  * CRITICAL: This function should be called for EVERY state change in the system
  */
+const auditRepository = new AuditRepository(pool);
+
 export async function createAuditLog({
   entityType,
   entityId,
@@ -59,27 +62,7 @@ export async function createAuditLog({
     throw new Error('ENFORCEMENT VIOLATION: Audit log requires entityType, entityId, action, and performedBy');
   }
 
-  const query = `
-    INSERT INTO audit_logs (
-      entity_type, entity_id, action, performed_by,
-      previous_value, new_value, ip_address, user_agent, additional_context
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    RETURNING id, timestamp
-  `;
-
-  const result = await pool.query(query, [
-    entityType,
-    entityId,
-    action,
-    performedBy,
-    previousValue ? JSON.stringify(previousValue) : null,
-    newValue ? JSON.stringify(newValue) : null,
-    ipAddress,
-    userAgent,
-    additionalContext ? JSON.stringify(additionalContext) : null
-  ]);
-
-  return result.rows[0] as AuditLogResult;
+  return await auditRepository.create({ entityType, entityId, action, performedBy, previousValue, newValue, ipAddress, userAgent, additionalContext });
 }
 
 /**
@@ -89,19 +72,7 @@ export async function getAuditLogsForEntity(
   entityType: string, 
   entityId: string
 ): Promise<AuditLogEntry[]> {
-  const query = `
-    SELECT 
-      al.*,
-      u.name as performed_by_name,
-      u.email as performed_by_email
-    FROM audit_logs al
-    JOIN users u ON al.performed_by = u.id
-    WHERE al.entity_type = $1 AND al.entity_id = $2
-    ORDER BY al.timestamp DESC
-  `;
-
-  const result = await pool.query(query, [entityType, entityId]);
-  return result.rows as AuditLogEntry[];
+  return await auditRepository.findByEntity(entityType, entityId);
 }
 
 /**
@@ -113,19 +84,7 @@ export async function getAuditLogsForOrganization(
 ): Promise<AuditLogEntry[]> {
   const { limit = 100, offset = 0 } = options;
   
-  const query = `
-    SELECT 
-      al.*,
-      u.name as performed_by_name
-    FROM audit_logs al
-    JOIN users u ON al.performed_by = u.id
-    WHERE u.organization_id = $1
-    ORDER BY al.timestamp DESC
-    LIMIT $2 OFFSET $3
-  `;
-
-  const result = await pool.query(query, [organizationId, limit, offset]);
-  return result.rows as AuditLogEntry[];
+  return await auditRepository.findByOrganization(organizationId, limit, offset);
 }
 
 // Predefined action types for consistency

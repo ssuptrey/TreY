@@ -25,7 +25,7 @@ const Layout: React.FC = () => {
       <header className="header">
         <h1>Compliance Execution System</h1>
         <div className="header-info">
-          <span>{user?.organizationName}</span>
+          <span>{user?.organization_name}</span>
           <span>|</span>
           <span>{user?.name} ({user?.role})</span>
           <button className="btn btn-sm btn-outline" onClick={handleLogout}>

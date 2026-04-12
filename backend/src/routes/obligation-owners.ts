@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { ObligationOwnerController } from '../controllers/obligationOwnerController';
 import { authenticate, requireRole } from '../middlewares/auth';
-// import { handleValidation } from '../validators/validationMiddleware';
+import { handleValidation } from '../validators/validationMiddleware';
+import { obligationOwnerValidators } from '../validators/obligationOwnerValidator';
 
 const router = Router();
 const controller = new ObligationOwnerController({
@@ -14,6 +15,8 @@ const controller = new ObligationOwnerController({
 router.get(
   '/:obligationId',
   authenticate,
+  obligationOwnerValidators.getActive(),
+  handleValidation,
   controller.getActive
 );
 
@@ -22,6 +25,8 @@ router.post(
   '/assign',
   authenticate,
   requireRole('SuperAdmin', 'Admin'),
+  obligationOwnerValidators.assign(),
+  handleValidation,
   controller.assign
 );
 
@@ -29,6 +34,8 @@ router.post(
 router.get(
   '/:obligationId/history',
   authenticate,
+  obligationOwnerValidators.getHistory(),
+  handleValidation,
   controller.getHistory
 );
 
