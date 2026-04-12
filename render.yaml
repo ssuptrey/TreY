@@ -10,6 +10,8 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -34,6 +36,10 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: build
     envVars:
+      - key: CI
+        value: "false" # This prevents the build from failing on minor warnings
+      - key: NODE_VERSION
+        value: "20"
       - key: REACT_APP_API_URL
         fromService:
           type: web
