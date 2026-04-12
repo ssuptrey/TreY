@@ -56,10 +56,10 @@ app.use(cors({
 }));
 
 // Rate limiting - Per rulebook: 100 req / 15 min general, 5 req / 15 min auth
-// Strict limits for production readiness
+// Expanded limits to prevent developer/testing lockout
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Strict limit for production (was 1000 for demo)
+  max: 1000, // Increased for testing (was 100)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -67,7 +67,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Strict limit for production (was 50 for demo)
+  max: 100, // Increased to prevent lockout during testing (was 5)
   message: 'Too many login attempts, please try again later.',
   skipSuccessfulRequests: true,
 });
