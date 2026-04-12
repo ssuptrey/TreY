@@ -156,7 +156,7 @@ export class ObligationService {
     const relatedAuditResult = await pool.query(relatedAuditQuery, [ownerIds, slaIds, evidenceIds]);
     const allAuditLogs = [...auditLogs, ...relatedAuditResult.rows].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    const currentSla = slaHistoryResult.rows.find(s => s.is_current);
+    const currentSla = slaHistoryResult.rows.find((s: any) => s.is_current);
     const daysRemaining = currentSla ? Math.ceil((new Date(currentSla.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
     let riskStatus = 'UNKNOWN';
@@ -173,7 +173,7 @@ export class ObligationService {
       data: {
         obligation: { ...obligation, daysRemaining, riskStatus },
         ownerHistory: ownerHistoryResult.rows,
-        currentOwner: ownerHistoryResult.rows.find(o => o.is_current),
+        currentOwner: ownerHistoryResult.rows.find((o: any) => o.is_current),
         slaHistory: slaHistoryResult.rows,
         currentSla, evidence: evidenceResult.rows, auditTimeline: allAuditLogs
       }
