@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { obligationsAPI } from '../api';
 
 interface Task {
   id: string;
@@ -30,105 +32,34 @@ const MyTasks: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overdue' | 'today' | 'upcoming' | 'approvals'>('overdue');
-  const currentUser = 'Rahul Sharma'; // Would come from auth context
+  const { user } = useAuth();
+  const currentUser = user?.name || 'User';
 
   useEffect(() => {
     loadTasks();
   }, []);
 
   const loadTasks = async () => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    // Demo tasks
-    const demoTasks: Task[] = [
-      {
-        id: '1',
-        obligation_id: '101',
-        obligation_title: 'KYC Documentation Update',
+    try {
+      const response = await obligationsAPI.list({ owner: user?.id });
+      const apiTasks: Task[] = (response.data.data || []).map((obs: any) => ({
+        id: obs.id, // This is actually the obligation ID now
+        obligation_id: obs.id,
+        obligation_title: obs.title,
         type: 'evidence_upload',
-        priority: 'critical',
-        due_date: '2026-01-25T00:00:00Z',
-        days_remaining: -4,
-        status: 'pending',
-        description: 'Upload updated KYC verification documents',
-        regulation_tag: 'RBI/KYC/2025'
-      },
-      {
-        id: '2',
-        obligation_id: '102',
-        obligation_title: 'Monthly Compliance Report',
-        type: 'action_required',
-        priority: 'critical',
-        due_date: '2026-01-29T00:00:00Z',
-        days_remaining: 0,
-        status: 'in_progress',
-        description: 'Complete monthly compliance report submission',
-        regulation_tag: 'RBI/DNBS/2024'
-      },
-      {
-        id: '3',
-        obligation_id: '103',
-        obligation_title: 'AML Transaction Review',
-        type: 'review',
-        priority: 'high',
-        due_date: '2026-01-30T00:00:00Z',
-        days_remaining: 1,
-        status: 'pending',
-        description: 'Review flagged transactions for AML compliance',
-        regulation_tag: 'PMLA/2025'
-      },
-      {
-        id: '4',
-        obligation_id: '104',
-        obligation_title: 'Grievance Report Q4',
-        type: 'approval',
-        priority: 'high',
-        due_date: '2026-01-31T00:00:00Z',
-        days_remaining: 2,
-        status: 'pending',
-        description: 'Approve quarterly grievance redressal report',
-        regulation_tag: 'RBI/GRMD/2024'
-      },
-      {
-        id: '5',
-        obligation_id: '105',
-        obligation_title: 'IT Security Assessment',
-        type: 'evidence_upload',
-        priority: 'medium',
-        due_date: '2026-02-05T00:00:00Z',
-        days_remaining: 7,
-        status: 'pending',
-        description: 'Upload IT security audit findings',
-        regulation_tag: 'RBI/IT/2025'
-      },
-      {
-        id: '6',
-        obligation_id: '106',
-        obligation_title: 'Fair Practice Code Review',
-        type: 'approval',
-        priority: 'medium',
-        due_date: '2026-02-10T00:00:00Z',
-        days_remaining: 12,
-        status: 'pending',
-        description: 'Final approval for FPC compliance attestation',
-        regulation_tag: 'RBI/FPC/2024'
-      },
-      {
-        id: '7',
-        obligation_id: '107',
-        obligation_title: 'CERSAI Filing Verification',
-        type: 'review',
-        priority: 'high',
-        due_date: '2026-01-28T00:00:00Z',
-        days_remaining: -1,
-        status: 'pending',
-        description: 'Verify CERSAI registration data accuracy',
-        regulation_tag: 'SARFAESI/2024'
-      }
-    ];
-
-    setTasks(demoTasks);
-    setLoading(false);
+        priority: obs.risk_level === 'critical' ? 'critical' : (obs.days_remaining && obs.days_remaining <= 7 ? 'high' : 'medium'),
+        due_date: obs.sla_due_date || new Date().toISOString(),
+        days_remaining: obs.days_remaining || 0,
+        status: obs.status === 'closed' ? 'completed' : 'pending',
+        description: obs.description || 'Action required for this compliance policy',
+        regulation_tag: obs.regulation_tag
+      }));
+      setTasks(apiTasks);
+    } catch (err) {
+      console.error('Failed to load tasks', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStats = (): TaskStats => {
@@ -303,7 +234,7 @@ const MyTasks: React.FC = () => {
                 </div>
                 <div className="task-actions">
                   {task.type === 'evidence_upload' && (
-                    <button className="btn btn-sm btn-primary">Upload</button>
+                    <Link to={`/obligations/${task.obligation_id}`} className="btn btn-sm btn-primary" style={{textDecoration: 'none'}}>Upload</Link>
                   )}
                   {task.type === 'approval' && (
                     <>
@@ -312,7 +243,7 @@ const MyTasks: React.FC = () => {
                     </>
                   )}
                   {task.type === 'review' && (
-                    <button className="btn btn-sm btn-primary">Review</button>
+                    <Link to={`/obligations/${task.obligation_id}`} className="btn btn-sm btn-primary" style={{textDecoration: 'none'}}>Review</Link>
                   )}
                   {task.type === 'action_required' && (
                     <Link to={`/obligations/${task.obligation_id}`} className="btn btn-sm btn-primary">
