@@ -13,9 +13,12 @@ interface DatabaseConfig extends PoolConfig {
 }
 
 // Support both cloud database (DATABASE_URL) and legacy config
-const poolConfig: DatabaseConfig = process.env.DATABASE_URL 
+// OVERRIDE: Force IPv4 connection pooler to prevent Render connection drops
+const dbUrl = process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(':5432', ':6543') : 'postgresql://postgres:Guccigeng77@db.crkhtiuwxeznikxrqdnd.supabase.co:6543/postgres';
+
+const poolConfig: DatabaseConfig = true
   ? {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: dbUrl,
       ssl: {
         rejectUnauthorized: false // Required for cloud databases (Neon, Supabase, Railway)
       },
