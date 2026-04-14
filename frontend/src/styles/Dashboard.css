@@ -88,48 +88,77 @@
 }
 
 /* Intelligence Grid â€” iOS style */
+/* Intelligence Grid — Premium SaaS */
 .intelligence-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
   margin-bottom: 28px;
+  background-color: transparent;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .intel-card {
   background-color: #ffffff;
-  border-radius: 14px;
-  padding: 22px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  border: none;
-  border-top: 3px solid #3a3a3c;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .intel-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.intel-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+  opacity: 0.8;
 }
 
 .intel-title {
-  font-size: 12px;
-  font-weight: 600;
-  margin: 0 0 18px 0;
-  color: #3a3a3c;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f2f2f7;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.intel-title::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #6366f1;
 }
 
 /* Risk Context Under Summary Cards */
 .risk-context {
-  font-size: 11px;
-  color: #7f8c8d;
-  margin-top: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #64748b;
   font-weight: 500;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 /* Breach Pulse Animation */
@@ -154,47 +183,45 @@
 }
 
 .analysis-table thead {
-  background-color: #f9f9fb;
-  border-bottom: 1px solid #e5e5ea;
+  background-color: transparent;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .analysis-table th {
-  padding: 10px 16px;
+  padding: 10px 4px;
   text-align: left;
-  font-weight: 600;
-  color: #8e8e93;
+  font-weight: 700;
+  color: #94a3b8;
   text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
 }
 
 .analysis-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f2f2f7;
+  padding: 14px 4px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .analysis-table tbody tr:hover {
-  background-color: #f9f9fb;
+  background-color: transparent;
 }
 
 .source-label {
-  color: #3a3a3c;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.3px;
+  color: #334155;
+  font-weight: 500;
+  font-size: 13px;
 }
 
 .source-count {
-  color: #ff3b30;
+  color: #0f172a;
   font-weight: 700;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .source-percentage {
-  color: #8e8e93;
-  font-weight: 700;
+  color: #64748b;
+  font-weight: 600;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
   font-size: 13px;
 }
@@ -203,72 +230,66 @@
 .discipline-scores {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 .score-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background-color: #f9f9fb;
-  border-radius: 10px;
+  padding: 16px 0;
+  background-color: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: none;
+}
+
+.score-item:last-child {
   border-bottom: none;
-  border-left: 3px solid #d1d1d6;
 }
 
 .score-label {
-  font-size: 12px;
-  color: #3a3a3c;
+  font-size: 13px;
+  color: #334155;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.05em;
 }
 
 .score-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px;
 }
 
 .score-value {
   font-size: 24px;
-  font-weight: 700;
-  padding: 6px 16px;
-  border-radius: 10px;
+  font-weight: 800;
+  padding: 0;
+  border-radius: 0;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
-  border: 1.5px solid;
+  border: none;
+  background-color: transparent;
 }
 
 .score-value.high {
-  color: #248a3d;
-  background-color: rgba(52, 199, 89, 0.08);
-  border-color: rgba(52, 199, 89, 0.3);
+  color: #10b981;
 }
 
 .score-value.medium {
-  color: #9a6700;
-  background-color: rgba(255, 159, 10, 0.08);
-  border-color: rgba(255, 159, 10, 0.3);
+  color: #f59e0b;
 }
 
 .score-value.low {
-  color: #d63029;
-  background-color: rgba(255, 59, 48, 0.08);
-  border-color: rgba(255, 59, 48, 0.3);
+  color: #ef4444;
 }
 
 .score-warning {
-  font-size: 10px;
-  color: #ff3b30;
+  font-size: 11px;
+  color: #ef4444;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background-color: rgba(255, 59, 48, 0.08);
-  padding: 3px 8px;
-  border-left: none;
-  border-radius: 6px;
+  letter-spacing: 0.05em;
 }
 
 /* Recent Breaches Section */
@@ -355,22 +376,9 @@
   line-height: 1.3;
 }
 
-/* Enhanced Summary Cards with Depth â€” iOS */
-.summary-card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
+/* Built for SaaS performance */
 
-.summary-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Card enhancements â€” iOS */
-.card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  border: none;
-}
+/* Removed override */
 
 /* ============================================
    REGULATORY INTELLIGENCE BAR â€” iOS
@@ -687,10 +695,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  background: var(--primary-50);
-  border: 1px solid var(--border-default);
-  border-radius: 4px;
+  padding: 12px 0;
+  background: transparent;
+  border-bottom: 1px solid #f1f5f9;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.score-item:last-child {
+  border-bottom: none;
 }
 
 .score-label {

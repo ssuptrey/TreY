@@ -35,19 +35,21 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f8fafc; /* super light slate */
+  background-color: #F8FAFC; /* premium SaaS light slate */
 }
 
 .enforcement-banner {
-  background-color: #1e293b; /* dark slate */
-  color: #f8fafc;
-  font-size: 11px;
+  background-color: #0F172A; /* premium dark slate */
+  color: #F8FAFC;
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 8px 16px;
-  text-align: center;
-  border-bottom: 2px solid #4f46e5; /* subtle brand accent */
+  letter-spacing: 0.05em;
+  padding: 10px 24px;
+  text-align: left;
+  border-bottom: 1px solid #1E293B; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 20;
 }
 
 .layout-body {
@@ -58,52 +60,55 @@ body {
 
 /* Sidebar Styling */
 .sidebar {
-  width: 260px;
-  background-color: #0f172a;
-  color: #94a3b8;
+  width: 280px;
+  background-color: #0F172A;
+  color: #94A3B8;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1e293b;
+  border-right: 1px solid rgba(255,255,255,0.05);
   flex-shrink: 0;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
 
 .sidebar-brand {
-  padding: 24px 20px;
-  border-bottom: 1px solid #1e293b;
+  padding: 32px 24px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .sidebar-brand h2 {
-  color: #f8fafc;
+  color: #FFFFFF;
   margin: 0 0 4px 0;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.5px;
 }
 
 .org-badge {
   font-size: 11px;
-  color: #38bdf8;
-  font-weight: 600;
+  color: #6366F1;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 1px;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .sidebar-nav {
-  padding: 24px 16px;
+  padding: 32px 24px;
   flex: 1;
   overflow-y: auto;
 }
 
 .nav-section-title {
-  color: #64748b;
-  font-size: 11px;
+  color: #475569;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 12px;
-  padding-left: 12px;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  padding-left: 8px;
 }
 
 .sidebar-nav ul {
@@ -112,30 +117,33 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .nav-item {
   display: block;
-  padding: 10px 12px;
-  color: #cbd5e1;
+  padding: 12px 16px;
+  color: #94A3B8;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
-  border-radius: 6px;
+  font-weight: 600;
+  border-radius: 12px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .nav-item:hover {
-  background-color: #1e293b;
-  color: #f8fafc;
+  background-color: rgba(255,255,255,0.05);
+  color: #F8FAFC;
 }
 
 .nav-item.active {
-  background-color: #4f46e5; /* brand indigo */
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+  color: #818CF8;
+  font-weight: 700;
+  border-left: 3px solid #6366F1;
+  border-radius: 0 12px 12px 0;
 }
 
 .sidebar-footer {
@@ -212,33 +220,54 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f1f5f9;
+  background-color: #F8FAFC;
   overflow: auto;
+  position: relative;
+}
+
+/* Subtle background gradient behind the header */
+.main-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(180deg, #E2E8F0 0%, #F8FAFC 100%);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .top-header {
-  height: 64px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  height: 80px;
+  background-color: transparent;
+  border-bottom: none;
   display: flex;
   align-items: center;
-  padding: 0 32px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 0 48px;
+  box-shadow: none;
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .breadcrumb-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #475569;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  font-family: 'Inter', sans-serif;
 }
 
 .main-content {
   flex: 1;
-  padding: 32px;
+  padding: 24px 48px 48px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  position: relative;
+  z-index: 10;
 }
 
 /* Buttons — Enterprise Style */
@@ -358,23 +387,23 @@ body {
   margin-top: 5px;
 }
 
-/* Cards â€” iOS style */
+/* Cards — Enterprise style */
 .card {
   background-color: white;
-  border: none;
-  border-radius: 14px;
-  padding: 22px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f2f2f7;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .card-header h2 {
@@ -452,48 +481,99 @@ tr:hover {
 }
 
 /* Dashboard summary cards â€” iOS style */
+/* ============================================
+   PREMIUM SAAS DASHBOARD LOOK (Conceptzilla Style)
+   ============================================ */
+
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 36px;
 }
 
 .summary-card {
-  background-color: white;
-  border: none;
-  border-radius: 14px;
-  padding: 22px;
-  text-align: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s ease;
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 28px 24px;
+  position: relative;
+  text-align: left;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02), 0px 10px 40px -10px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .summary-card:hover {
-  transform: translateY(-1px);
+  transform: translateY(-4px);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04), 0px 16px 50px -12px rgba(0, 0, 0, 0.08);
 }
 
-.summary-card.green {
-  border-left: 4px solid #34c759;
+/* Background soft glows */
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+  transform: translate(30%, -30%);
+  will-change: transform, opacity; /* GPU acceleration hint */
 }
 
-.summary-card.amber {
-  border-left: 4px solid #ff9f0a;
+.summary-card.green::before { background-color: #10b981; }
+.summary-card.amber::before { background-color: #f59e0b; }
+.summary-card.red::before { background-color: #ef4444; }
+
+/* Performance optimization for low-end devices & mobile */
+@media (max-width: 768px) {
+  .summary-card::before {
+    display: none; /* Disable heavy blur filters on mobile */
+  }
+  .summary-card:hover {
+    transform: none; /* Disable hover lifts on mobile to prevent layout thrashing */
+  }
+  .main-wrapper::before {
+    display: none; /* Strip out background gradients to save memory */
+  }
 }
 
-.summary-card.red {
-  border-left: 4px solid #ff3b30;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.summary-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .summary-card .number {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 4px;
+  letter-spacing: -2px;
+  font-family: 'Inter', sans-serif;
 }
 
 .summary-card .label {
   font-size: 14px;
-  color: #666;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.1px;
+  margin-bottom: 8px;
 }
 
 /* Alert messages */
