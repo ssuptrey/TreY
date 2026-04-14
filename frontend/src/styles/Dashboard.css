@@ -7,8 +7,8 @@
   background-color: #ffffff;
   border: none;
   margin-bottom: 28px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-radius: 0;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   overflow: hidden;
 }
 
@@ -29,7 +29,7 @@
   letter-spacing: 1.2px;
   margin-bottom: 8px;
   border: none;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .seal-title {
@@ -60,7 +60,7 @@
   padding: 10px 12px;
   background-color: #ffffff;
   border-left: 3px solid #d1d1d6;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .guarantee-icon {
@@ -120,7 +120,7 @@
   display: flex;
   background-color: #FFFFFF;
   border: 1px solid #D1D5DB;
-  border-radius: 0;
+  border-radius: 0 !important;
   margin-bottom: 32px;
 }
 
@@ -182,7 +182,7 @@ a.metric-column:hover {
 .dense-panel {
   background-color: #FFFFFF;
   border: 1px solid #D1D5DB;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .dense-panel .panel-header {
@@ -319,7 +319,7 @@ a.metric-column:hover {
   align-items: center;
   padding: 16px 0;
   background-color: transparent;
-  border-radius: 0;
+  border-radius: 0 !important;
   border-bottom: 1px solid #f1f5f9;
   border-left: none;
 }
@@ -347,7 +347,7 @@ a.metric-column:hover {
   font-size: 24px;
   font-weight: 800;
   padding: 0;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
   border: none;
   background-color: transparent;
@@ -376,10 +376,10 @@ a.metric-column:hover {
 /* Recent Breaches Section */
 .breach-history-card {
   border-top: 3px solid #ff3b30;
-  border-radius: 0;
+  border-radius: 0 !important;
   border: none;
   border-top: 3px solid #ff3b30;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: none !important;
 }
 
 .breach-history-card .card-header {
@@ -399,7 +399,7 @@ a.metric-column:hover {
   background-color: #ff3b30;
   color: white;
   padding: 4px 12px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -420,7 +420,7 @@ a.metric-column:hover {
   padding: 4px 10px;
   background-color: rgba(255, 159, 10, 0.1);
   color: #9a6700;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -433,7 +433,7 @@ a.metric-column:hover {
   padding: 4px 12px;
   background-color: rgba(255, 59, 48, 0.08);
   color: #d63029;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 12px;
   font-weight: 700;
   border: none;
@@ -449,7 +449,7 @@ a.metric-column:hover {
   margin-top: 4px;
   display: inline-block;
   border-left: none;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -473,7 +473,7 @@ a.metric-column:hover {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #34c759;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .intel-bar-left {
@@ -489,7 +489,7 @@ a.metric-column:hover {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .intel-stat {
@@ -522,7 +522,7 @@ a.metric-column:hover {
   border: 1px solid #48484a;
   color: #aeaeb2;
   font-size: 11px;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .btn-intel:hover {
@@ -537,8 +537,8 @@ a.metric-column:hover {
   background-color: #ffffff;
   border: none;
   margin-bottom: 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  border-radius: 0;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   overflow: hidden;
 }
 
@@ -570,7 +570,7 @@ a.metric-column:hover {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .model-info {
@@ -624,7 +624,7 @@ a.metric-column:hover {
   padding: 10px 14px;
   background-color: #f9f9fb;
   border-left: 3px solid #d1d1d6;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .risk-factor .factor-icon {
@@ -635,7 +635,7 @@ a.metric-column:hover {
   justify-content: center;
   font-weight: 700;
   font-size: 11px;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .risk-factor .factor-icon.high {
@@ -665,7 +665,7 @@ a.metric-column:hover {
   background-color: #ff9f0a;
   color: #ffffff;
   border: none;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .btn-warning:hover {
@@ -710,7 +710,7 @@ a.metric-column:hover {
 
 .intel-card {
   background: white;
-  border-radius: 0;
+  border-radius: 0 !important;
   padding: 20px;
   border: 1px solid var(--border-default);
 }
@@ -779,7 +779,7 @@ a.metric-column:hover {
   padding: 12px 0;
   background: transparent;
   border-bottom: 1px solid #f1f5f9;
-  border-radius: 0;
+  border-radius: 0 !important;
   border-left: none;
   border-right: none;
   border-top: none;
@@ -831,7 +831,7 @@ a.metric-column:hover {
   background: var(--risk-critical);
   color: white;
   padding: 4px 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -847,7 +847,7 @@ a.metric-column:hover {
   background: var(--risk-critical-bg);
   border: 1px solid var(--risk-critical-border);
   color: var(--risk-critical);
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 500;
 }
@@ -857,7 +857,7 @@ a.metric-column:hover {
   padding: 4px 10px;
   background: var(--risk-critical);
   color: white;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -884,7 +884,7 @@ a.metric-column:hover {
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -915,7 +915,7 @@ a.metric-column:hover {
 .step-icon {
   width: 32px;
   height: 32px;
-  border-radius: 0;
+  border-radius: 0 !important;
   background: var(--primary-500);
   color: white;
   display: flex;
@@ -936,7 +936,7 @@ a.metric-column:hover {
   color: var(--text-muted);
   padding: 2px 8px;
   background: white;
-  border-radius: 0;
+  border-radius: 0 !important;
   border: 1px solid var(--border-default);
 }
 
@@ -1006,7 +1006,7 @@ a.metric-column:hover {
 .stage-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
 }

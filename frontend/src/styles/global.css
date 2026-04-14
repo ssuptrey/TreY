@@ -18,7 +18,7 @@
 }
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
@@ -65,7 +65,7 @@ body {
   padding: 10px 24px;
   text-align: left;
   border-bottom: 1px solid #1E293B; 
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: none !important;
   z-index: 20;
 }
 
@@ -108,7 +108,7 @@ body {
   letter-spacing: 1px;
   background: rgba(99, 102, 241, 0.1);
   padding: 4px 8px;
-  border-radius: 0;
+  border-radius: 0 !important;
   display: inline-block;
 }
 
@@ -153,7 +153,7 @@ body {
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 0;
+  border-radius: 0 !important;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -169,7 +169,7 @@ body {
   color: #818CF8;
   font-weight: 700;
   border-left: 3px solid #6366F1;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 .sidebar-footer {
@@ -190,7 +190,7 @@ body {
 .user-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 0;
+  border-radius: 0 !important;
   background-color: #38bdf8;
   color: #0f172a;
   display: flex;
@@ -228,7 +228,7 @@ body {
   background: transparent;
   color: #94a3b8;
   border: 1px solid #334155;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -291,7 +291,7 @@ body {
   font-family: var(--font-mono);
   text-transform: uppercase;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: 0 !important;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s ease-in-out;
@@ -303,13 +303,13 @@ body {
   background-color: #111827;
   color: white;
   border-color: #111827;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 .btn-primary:hover {
   background-color: #374151;
   transform: none;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 .btn-secondary {
@@ -336,8 +336,8 @@ body {
   background-color: transparent;
   border: 1px solid #D1D5DB;
   color: #374151;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .btn-outline:hover {
@@ -349,7 +349,7 @@ body {
 .btn-sm {
   padding: 4px 10px;
   font-size: 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 /* Forms � Enterprise Style */
@@ -373,11 +373,11 @@ body {
   font-size: 16px;
   font-family: inherit;
   border: 1px solid #cbd5e1; /* Slate 300 */
-  border-radius: 0;
+  border-radius: 0 !important;
   background-color: #f8fafc; /* Slate 50 */
   color: #1e293b;
   transition: all 0.2s ease;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: none !important;
 }
 
 .form-group input:focus,
@@ -386,7 +386,7 @@ body {
   outline: none;
   background-color: white;
   border-color: #6366f1; /* Indigo 500 */
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: none !important;
 }
 
 .form-group textarea {
@@ -408,10 +408,10 @@ body {
 .card {
   background-color: white;
   border: 1px solid #E5E7EB;
-  border-radius: 0;
+  border-radius: 0 !important;
   padding: 0;
   margin-bottom: 24px;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 .card-header {
@@ -475,7 +475,7 @@ tr:hover {
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -516,12 +516,12 @@ tr:hover {
 
 .summary-card {
   background-color: #ffffff;
-  border-radius: 0;
+  border-radius: 0 !important;
   padding: 28px 24px;
   position: relative;
   text-align: left;
   border: 1px solid rgba(226, 232, 240, 0.6);
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02), 0px 10px 40px -10px rgba(0, 0, 0, 0.04);
+  box-shadow: none !important;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -530,7 +530,7 @@ tr:hover {
 
 .summary-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04), 0px 16px 50px -12px rgba(0, 0, 0, 0.08);
+  box-shadow: none !important;
 }
 
 /* Background soft glows */
@@ -541,7 +541,7 @@ tr:hover {
   right: 0;
   width: 150px;
   height: 150px;
-  border-radius: 0;
+  border-radius: 0 !important;
   filter: blur(50px);
   opacity: 0.15;
   pointer-events: none;
@@ -601,7 +601,7 @@ tr:hover {
 /* Alert messages */
 .alert {
   padding: 12px 16px;
-  border-radius: 0;
+  border-radius: 0 !important;
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -642,10 +642,10 @@ tr:hover {
 .auth-card {
   background-color: white;
   padding: 48px;
-  border-radius: 0;
+  border-radius: 0 !important;
   width: 100%;
   max-width: 440px;
-  box-shadow: none;
+  box-shadow: none !important;
   border: 1px solid #E5E7EB;
 }
 
@@ -763,7 +763,7 @@ tr:hover {
   top: 4px;
   width: 10px;
   height: 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   background-color: #4a90d9;
   border: 2px solid white;
 }
@@ -790,7 +790,7 @@ tr:hover {
   align-items: center;
   padding: 12px;
   background-color: #f8f9fa;
-  border-radius: 0;
+  border-radius: 0 !important;
   margin-bottom: 8px;
 }
 
@@ -816,7 +816,7 @@ tr:hover {
   background-color: #dc3545;
   color: white;
   padding: 2px 6px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 10px;
   font-weight: 600;
   margin-left: 8px;
@@ -838,7 +838,7 @@ tr:hover {
 
 .modal {
   background-color: white;
-  border-radius: 0;
+  border-radius: 0 !important;
   padding: 24px;
   max-width: 500px;
   width: 90%;
@@ -960,7 +960,7 @@ tr:hover {
 
 .sor-seal {
   background: #1a2332;
-  border-radius: 0;
+  border-radius: 0 !important;
   padding: 0;
   margin-bottom: 24px;
   border: 1px solid #2d3a4d;
@@ -980,7 +980,7 @@ tr:hover {
   background: #2563eb;
   color: #ffffff;
   padding: 5px 10px;
-  border-radius: 0;
+  border-radius: 0 !important;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -1128,5 +1128,56 @@ tr:hover {
   .late-evidence-warning .warning-badge {
     align-self: flex-start;
   }
+}
+
+/* ============================================
+   GLOBAL BRUTALIST UI OVERRIDES
+   ============================================ */
+/* Enforce sharp corners, remove shadows, and adapt harsh borders across all pages */
+
+.card, .panel, .stat-tab, table, th, td, button, .button, input, select, textarea {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.card:hover, .panel:hover, .stat-tab:hover, button:hover, .button:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Update general component borders to be more pronounced and brutalist */
+.card, .panel {
+  border: 1px solid var(--border-dark) !important;
+  background-color: var(--bg-card) !important;
+}
+
+.stat-tab {
+  border: 1px solid var(--border-dark) !important;
+}
+
+/* Flat colored warnings/badges */
+.badge, .status-badge {
+  border-radius: 0 !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: 1px solid currentColor !important;
+}
+
+/* Hard edges on buttons */
+button, .button {
+  border: 1px solid var(--border-dark) !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+/* Form inputs */
+input, select, textarea {
+  border: 1px solid var(--border-dark) !important;
+  background-color: var(--bg-page) !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--gray-900) !important;
+  outline-offset: -1px;
 }
 

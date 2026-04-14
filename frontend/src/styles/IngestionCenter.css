@@ -73,7 +73,7 @@
   border: none;
   color: #d63029;
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 0 !important;
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -83,7 +83,7 @@
   border: none;
   color: #248a3d;
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 0 !important;
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -92,9 +92,9 @@
 .ingestion-content {
   background-color: #ffffff;
   border: none;
-  border-radius: 14px;
+  border-radius: 0 !important;
   padding: 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: none !important;
 }
 
 /* CSV Section */
@@ -118,7 +118,7 @@
 .csv-format-info {
   background-color: #f9f9fb;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   padding: 16px;
   margin-bottom: 24px;
 }
@@ -154,7 +154,7 @@
 .format-table code {
   background-color: #fff3cd;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 0 !important;
   font-size: 12px;
   font-family: 'Courier New', monospace;
 }
@@ -167,7 +167,7 @@
 /* CSV Dropzone */
 .csv-dropzone {
   border: 2px dashed #d1d1d6;
-  border-radius: 14px;
+  border-radius: 0 !important;
   padding: 44px 24px;
   text-align: center;
   cursor: pointer;
@@ -251,7 +251,7 @@
 .preview-table-wrapper {
   overflow-x: auto;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border-radius: 0 !important;
 }
 
 .preview-table {
@@ -293,7 +293,7 @@
   background-color: #007aff;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -314,7 +314,7 @@
 .import-result {
   margin-top: 24px;
   padding: 20px;
-  border-radius: 14px;
+  border-radius: 0 !important;
 }
 
 .import-result.success {
@@ -366,7 +366,7 @@
 .import-errors {
   background-color: rgba(220, 38, 38, 0.1);
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 0 !important;
   margin-top: 16px;
 }
 
@@ -413,7 +413,7 @@
 .setup-card {
   background-color: #f9f9fb;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   padding: 20px;
   margin-bottom: 24px;
 }
@@ -430,7 +430,7 @@
   background-color: #1c1c1e;
   color: #30d158;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: 0 !important;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
   font-size: 13px;
   word-break: break-all;
@@ -468,10 +468,10 @@
 .provider {
   background-color: #ffffff;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: none !important;
 }
 
 .provider h4 {
@@ -492,7 +492,7 @@
 .provider code {
   background-color: #fff3cd;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: 0 !important;
   font-size: 12px;
   font-family: 'Courier New', monospace;
 }
@@ -503,7 +503,7 @@
   background-color: #1c1c1e;
   color: #f5f5f7;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 0 !important;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
   font-size: 12px;
   overflow-x: auto;
@@ -564,10 +564,10 @@
   gap: 12px;
   background-color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   padding: 12px 16px;
   min-width: 140px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: none !important;
 }
 
 .stat-icon {
@@ -603,9 +603,9 @@
 .logs-table-wrapper {
   overflow-x: auto;
   border: none;
-  border-radius: 12px;
+  border-radius: 0 !important;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: none !important;
 }
 
 .logs-table {
@@ -649,7 +649,7 @@
   gap: 4px;
   background-color: #f2f2f7;
   padding: 3px 8px;
-  border-radius: 8px;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 500;
 }
@@ -674,7 +674,7 @@
 .status-badge {
   display: inline-block;
   padding: 3px 8px;
-  border-radius: 20px;
+  border-radius: 0 !important;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -712,7 +712,7 @@
   padding: 9px 18px;
   background-color: #f2f2f7;
   border: none;
-  border-radius: 10px;
+  border-radius: 0 !important;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;

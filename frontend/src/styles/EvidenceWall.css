@@ -33,7 +33,7 @@
 .evidence-stats-bar .stat-card {
   background: white;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: 0 !important;
   padding: 16px;
   text-align: center;
 }
@@ -77,7 +77,7 @@
   padding: 14px 20px;
   background: var(--risk-critical-bg);
   border: 1px solid var(--risk-critical-border);
-  border-radius: 8px;
+  border-radius: 0 !important;
   margin-bottom: 24px;
 }
 
@@ -108,7 +108,7 @@
   width: 100%;
   padding: 10px 14px;
   border: 1px solid var(--border-default);
-  border-radius: 6px;
+  border-radius: 0 !important;
   font-size: 14px;
 }
 
@@ -126,7 +126,7 @@
 .evidence-filters .filter-group select {
   padding: 10px 12px;
   border: 1px solid var(--border-default);
-  border-radius: 6px;
+  border-radius: 0 !important;
   font-size: 14px;
   min-width: 120px;
 }
@@ -134,7 +134,7 @@
 .evidence-table-container {
   background: white;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: 0 !important;
   overflow: hidden;
   margin-bottom: 32px;
 }
@@ -216,7 +216,7 @@
   color: white;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 0 !important;
 }
 
 .timeliness-cell .on-time-badge {
@@ -226,14 +226,14 @@
   color: var(--risk-safe-text);
   font-size: 11px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 0 !important;
   border: 1px solid var(--risk-safe-border);
 }
 
 .status-cell .status-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
 }
@@ -262,7 +262,7 @@
   width: 32px;
   height: 32px;
   border: 1px solid var(--border-default);
-  border-radius: 6px;
+  border-radius: 0 !important;
   background: white;
   cursor: pointer;
   display: flex;
@@ -283,7 +283,7 @@
 .missing-evidence-section {
   background: white;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: 0 !important;
   padding: 20px;
 }
 
@@ -312,7 +312,7 @@
   padding: 14px;
   background: var(--risk-warning-bg);
   border: 1px solid var(--risk-warning-border);
-  border-radius: 6px;
+  border-radius: 0 !important;
 }
 
 .missing-item .missing-icon {
@@ -320,7 +320,7 @@
   height: 32px;
   background: var(--risk-warning);
   color: white;
-  border-radius: 50%;
+  border-radius: 0 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -354,7 +354,7 @@
   font-weight: 500;
   padding: 6px 12px;
   background: var(--primary-100);
-  border-radius: 4px;
+  border-radius: 0 !important;
 }
 
 .evidence-quality-summary {
@@ -371,7 +371,7 @@
   padding: 14px 20px;
   background: white;
   border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border-radius: 0 !important;
   flex: 1;
   min-width: 150px;
 }
@@ -384,7 +384,7 @@
 .quality-icon {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 0 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,7 +441,7 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 0 !important;
   font-size: 11px;
   font-weight: 600;
 }
