@@ -258,22 +258,22 @@ const Dashboard: React.FC = () => {
         </div>
         
         {/* Sleek inline workflow status (replaced clunky boxes) */}
-        <div className="approvals-workflow-dense">
-          <div className="workflow-steps-inline">
-            <span className="dense-step">
-              <span className="step-num">1</span> OPs UPLOAD: <span className="step-val text-red">3</span>
+        <div className="approvals-workflow-dense" style={{ padding: '12px 16px', backgroundColor: '#F9FAFB', borderTop: '1px solid #E5E7EB', borderBottom: '1px solid #E5E7EB' }}>
+          <div className="workflow-steps-inline" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '16px', fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.5px' }}>
+            <span className="dense-step" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="step-num" style={{ backgroundColor: '#111827', color: 'white', padding: '2px 6px' }}>1</span> OPs UPLOAD: <span className="step-val text-red" style={{ fontSize: '13px', fontWeight: 700 }}>3</span>
             </span>
-            <span className="workflow-sep">/</span>
-            <span className="dense-step">
-              <span className="step-num">2</span> RISK VALIDATION: <span className="step-val text-amber">2</span>
+            <span className="workflow-sep" style={{ color: '#D1D5DB' }}>/</span>
+            <span className="dense-step" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="step-num" style={{ backgroundColor: '#111827', color: 'white', padding: '2px 6px' }}>2</span> RISK VALIDATION: <span className="step-val text-amber" style={{ fontSize: '13px', fontWeight: 700 }}>2</span>
             </span>
-            <span className="workflow-sep">/</span>
-            <span className="dense-step">
-              <span className="step-num">3</span> COMPLIANCE APPROVAL: <span className="step-val text-amber">4</span>
+            <span className="workflow-sep" style={{ color: '#D1D5DB' }}>/</span>
+            <span className="dense-step" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="step-num" style={{ backgroundColor: '#111827', color: 'white', padding: '2px 6px' }}>3</span> COMPLIANCE APPROVAL: <span className="step-val text-amber" style={{ fontSize: '13px', fontWeight: 700 }}>4</span>
             </span>
-            <span className="workflow-sep">/</span>
-            <span className="dense-step">
-              <span className="step-num">4</span> GRO CLOSURE: <span className="step-val">1</span>
+            <span className="workflow-sep" style={{ color: '#D1D5DB' }}>/</span>
+            <span className="dense-step" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="step-num" style={{ backgroundColor: '#111827', color: 'white', padding: '2px 6px' }}>4</span> GRO CLOSURE: <span className="step-val" style={{ fontSize: '13px', fontWeight: 700 }}>1</span>
             </span>
           </div>
         </div>

@@ -30,41 +30,44 @@ Since we are using an AI voiceover, you must record the screen in **complete sil
 
 **Pro-Tip for Timing:** Have the "Master AI Voiceover Script" open on your phone. Read it *in your head* at a normal speaking pace while you operate the mouse. This ensures your video is perfectly timed to the audio you will generate later. Keep your mouse movements smooth, deliberate, and slow.
 
-### The Master Play-by-Play Timeline:
+### The Master Play-by-Play Timeline (Precision Timings):
 
-**1. The Hook (0:00 - 0:15)**
+**1. The Hook (0:00 - 0:17)**
 * **Start:** You are on the TreY Login screen. Do not move your mouse yet.
-* **WAIT:** Pause for 3 full seconds. (The AI will say: *"If you run an enterprise compliance team, you know that tracking SOC 2 and ISO 27001 across hundreds of engineers is a manual nightmare."*)
-* **Action:** Type `ciso@acme.com` and `demo123`. Click "Login".
-* **WAIT:** Pause for 3 seconds as the dashboard loads. (The AI says: *"Spreadsheets fail, evidence gets lost, and audits take months. That is why we built TreY."*)
+* **WAIT (3.0s):** Pause for 3 full seconds. (The AI will say: *"If you run an enterprise compliance team, you know that tracking SOC 2 and ISO 27001 across hundreds of engineers is a manual nightmare."*)
+* **Action - Login (3.5s):** Slowly type `ciso@acme.com` (takes ~1.5s), hit Tab, type `demo123` (takes ~1s), and move your mouse to click "Login" (takes ~1s). Use your keyboard efficiently.
+* **WAIT - Load (2.0s):** Pause as the dashboard loads.
+* **WAIT - Dashboard (3.0s):** Let the dashboard sit perfectly still. (The AI says: *"Spreadsheets fail, evidence gets lost, and audits take months. That is why we built TreY."*)
 
-**2. The Dashboard Oversight (0:15 - 0:4  0)**
-* **WAIT:** Let the dashboard sit perfectly still for 2 seconds.
-* **Action:** Slowly drag your mouse pointer in a smooth arc over the SLA Heatmap. 
-* **WAIT:** Hover your mouse over one of the "Overdue" or "Pending" items for 4 seconds. (The AI says: *"TreY is a unified compliance execution system. From the CISO dashboard, you have immediate, real-time visibility into your entire organization's risk profile."*)
-* **Action:** Scroll down smoothly to show the list of tasks. 
-* **WAIT:** Pause scrolling for 4 seconds. (The AI says: *"You can instantly see exactly which obligations are past their SLA, who owns them, and what the bottleneck is. No more chasing engineers in Slack."*)
+**2. The Dashboard Oversight (0:17 - 0:42)**
+* **Action - Mouse Arc (2.5s):** Slowly drag your mouse pointer in a smooth arc over the SLA Heatmap and Breach Analysis ribbon.
+* **WAIT - Hover (4.0s):** Hover your mouse over one of the "Overdue" or "Pending" items. (The AI says: *"TreY is a unified compliance execution system. From the CISO dashboard, you have immediate, real-time visibility into your entire organization's risk profile."*)
+* **Action - Scroll (2.0s):** Scroll down smoothly to show the list of tasks. 
+* **WAIT - Hover Table (4.0s):** Pause scrolling and hover over an assigned task. (The AI says: *"You can instantly see exactly which obligations are past their SLA, who owns them, and what the bottleneck is. No more chasing engineers in Slack."*)
 
-**3. The Engineering Workflow Transition (0:40 - 1:10)**
-* **Action:** Move your mouse up, click "Log Out". 
-* **WAIT:** Pause at the login screen for 1 second.
-* **Action:** Type `seceng@acme.com` and `demo123`. Click "Login".
-* **WAIT:** Let the Security Engineer dashboard load. Pause for 3 seconds. (The AI says: *"But compliance does not happen in a vacuum—it happens at the engineering level."*)
-* **Action:** Slowly click on the task named "Endpoint Antivirus Validation" (or similar).
-* **WAIT:** Pause inside the task for 3 seconds so the viewer sees the task details. (The AI says: *"TreY gives engineers a distraction-free workflow. They see exactly what policies they need to fulfill..."*)
-* **Action:** Click the "Upload Evidence" button, select a sample PDF, and watch the status turn to "Closed".
-* **WAIT:** Pause on the "Closed" badge for 3 seconds. (The AI says: *"...when the deadline is, and they can upload cryptographically tracked evidence directly into the platform."*)
+**3. The Engineering Workflow Transition (0:42 - 1:15)**
+* **Action - Logout (1.5s):** Move your mouse up and click "Log Out".
+* **WAIT - Network (1.0s):** Pause briefly at the login screen.
+* **Action - Login (3.5s):** Type `seceng@acme.com` (~1.5s), hit Tab, type `demo123` (~1.0s). Move mouse to hit "Login" (~1.0s).
+* **WAIT - Load (3.0s):** Let the Security Engineer dashboard load. (The AI says: *"But compliance does not happen in a vacuum—it happens at the engineering level."*)
+* **Action - Task Locate (1.5s):** Slowly move mouse to the task named "Endpoint Antivirus Validation" (or similar).
+* **Action - Click Task (1.0s):** Click to open task details.
+* **WAIT - Task Auth (3.0s):** Pause inside the task. (The AI says: *"TreY gives engineers a distraction-free workflow. They see exactly what policies they need to fulfill..."*)
+* **Action - Upload (4.0s):** Click the "Upload Evidence" button (~1.0s), wait for file dialog (~0.5s), double click your sample PDF (~2.5s).
+* **WAIT - Uploading (2.0s):** Watch the status badge turn to "Closed".
+* **WAIT - Review (3.0s):** Hover on the "Closed" badge. (The AI says: *"...when the deadline is, and they can upload cryptographically tracked evidence directly into the platform."*)
 
-**4. The Immutable Audit Trail (1:10 - 1:35)**
-* **Action:** Scroll down smoothly until the "Audit Log" timeline is in the center of the screen.
-* **WAIT:** Leave the mouse completely still for 4 seconds. (The AI says: *"Once evidence is uploaded, it is locked. The system automatically updates the SLA clock and appends an immutable record to the audit trail."*)
-* **Action:** Use your mouse to slowly highlight or hover over the exact timestamp of the upload you just did.
-* **WAIT:** Hold there for 4 seconds. (The AI says: *"When the external auditors arrive, you don't spend weeks gathering PDFs. You just grant them read-only access to ТреY, and your audit is done."*)
+**4. The Immutable Audit Trail (1:15 - 1:36)**
+* **Action - Scroll (2.0s):** Scroll down smoothly until the "Audit Log" timeline is in the center of the screen.
+* **WAIT - Observe (4.0s):** Leave the mouse completely still. (The AI says: *"Once evidence is uploaded, it is locked. The system automatically updates the SLA clock and appends an immutable record to the audit trail."*)
+* **Action - Highlight (2.0s):** Use your mouse to slowly highlight or hover over the exact timestamp of the upload you just did.
+* **WAIT - Listen (4.0s):** Hold there. (The AI says: *"When the external auditors arrive, you don't spend weeks gathering PDFs. You just grant them read-only access to TreY, and your audit is done."*)
 
-**5. The Call to Action (1:35 - 1:45)**
-* **Action:** Click the "Dashboard" or "Home" button to return to the main zoomed-out view.
-* **WAIT:** Let the screen sit completely still for 5 seconds. (The AI says: *"Compliance is not a checklist; it is a core security layer. We are currently onboarding design partners for our private beta. If you are ready to implement an immutable system-of-record for your enterprise governance, drop a comment below or send me a DM."*)
-* **Stop:** Hit stop on your Focusee recording.
+**5. The Call to Action (1:36 - 1:46)**
+* **Action - Return (1.5s):** Move mouse up to the "Dashboard" or "Home" button.
+* **Action - Click Home (0.5s):** Click it to return to the zoomed-out view.
+* **WAIT - Outro (5.0s):** Let the screen sit completely still. (The AI says: *"Compliance is not a checklist; it is a core security layer. We are currently onboarding design partners for our private beta. If you are ready to implement an immutable system-of-record for your enterprise governance, drop a comment below or send me a DM."*)
+* **Action - Stop (1.0s):** Move mouse to Focusee and hit stop on your recording.
 
 ### The Master AI Voiceover Script
 *(Copy this entire block into ElevenLabs to generate your single audio file)*
