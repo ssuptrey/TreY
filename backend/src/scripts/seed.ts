@@ -41,7 +41,7 @@ async function seed() {
 
     console.log('Loading massive SOC 2 & ISO 27001 Policy set...');
 
-    const insertObligation = async (title: string, desc: string, tag: string, status: string, ownerId: string, daysOffset: number, createdDaysAgo: number = 30) => {
+    const insertObligation = async (title: string, desc: string, tag: string, status: string, ownerId: string | null, daysOffset: number, createdDaysAgo: number = 30) => {
       // Calculate realistic historical creation date
       const createdDate = new Date();
       createdDate.setDate(createdDate.getDate() - createdDaysAgo);
@@ -59,10 +59,12 @@ async function seed() {
       const oblId = oblRes.rows[0].id;
 
       // 2. Insert Owner with historical assigned date
-      await client.query(
-        "INSERT INTO obligation_owners (obligation_id, user_id, assigned_by, is_current, assigned_at) VALUES ($1, $2, $3, true, $4)", 
-        [oblId, ownerId, cisoId, createdIso]
-      );
+      if (ownerId) {
+        await client.query(
+          "INSERT INTO obligation_owners (obligation_id, user_id, assigned_by, is_current, assigned_at) VALUES ($1, $2, $3, true, $4)", 
+          [oblId, ownerId, cisoId, createdIso]
+        );
+      }
 
       // 3. Insert SLA with historical created date
       await client.query(
@@ -76,10 +78,12 @@ async function seed() {
         [oblId, cisoId, JSON.stringify({title, description: desc, regulation_tag: tag}), createdIso]
       );
       
-      await client.query(
-        "INSERT INTO audit_logs (entity_type, entity_id, action, performed_by, new_value, timestamp) VALUES ('obligation', $1, 'OWNER_ASSIGN', $2, $3, $4)", 
-        [oblId, cisoId, JSON.stringify({user_id: ownerId}), createdIso]
-      );
+      if (ownerId) {
+        await client.query(
+          "INSERT INTO audit_logs (entity_type, entity_id, action, performed_by, new_value, timestamp) VALUES ('obligation', $1, 'OWNER_ASSIGN', $2, $3, $4)", 
+          [oblId, cisoId, JSON.stringify({user_id: ownerId}), createdIso]
+        );
+      }
 
       await client.query(
         "INSERT INTO audit_logs (entity_type, entity_id, action, performed_by, new_value, timestamp) VALUES ('obligation', $1, 'SLA_SET', $2, $3, $4)", 
@@ -91,10 +95,13 @@ async function seed() {
 
     // Note: The enums in postgres are 'open', 'closed', 'breached' - using 'open' for pending/in-progress and 'closed' for completed
     // Tasks overdue (created 45 days ago, due 12 days ago, etc.)
-    await insertObligation('Quarterly Access Review', 'Perform complete audit of AWS IAM roles to prune inactive users.', 'SOC2:CC6.1', 'open', secId, -12, 45);
+    const overdue1 = await insertObligation('Quarterly Access Review', 'Perform complete audit of AWS IAM roles to prune inactive users.', 'SOC2:CC6.1', 'open', secId, -12, 45);
     await insertObligation('Penetration Test Remediation', 'Fix HIGH vulnerabilities discovered in pentest.', 'ISO:A.12.6.1', 'open', devId, -4, 30);
     await insertObligation('Privacy Policy Update', 'Update employee privacy policy to match new GDPR standard.', 'GDPR:Art.13', 'open', legalId, -2, 28);
     
+    // Add an Unassigned breached obligation (Owner delays)
+    await insertObligation('Supplier Risk Audit', 'Audit high-risk critical vendors for security compliance.', 'ISO:A.15.2.1', 'open', null, -8, 30);
+
     // Tasks upcoming soon (created 14-20 days ago, due in a few days)
     await insertObligation('Endpoint Antivirus Validation', 'Ensure CrowdStrike is installed on 100% of employee laptops.', 'SOC2:CC6.6', 'open', secId, 2, 20);
     await insertObligation('Database Backup Testing', 'Perform disaster recovery test by restoring Production DB to staging.', 'SOC2:CC7.1', 'open', devId, 4, 18);
@@ -117,6 +124,9 @@ async function seed() {
     const evidenceIso = evidenceDate.toISOString();
 
     await client.query("INSERT INTO evidence (obligation_id, file_name, file_path, mime_type, file_size_bytes, uploaded_by, reference_note, uploaded_at) VALUES ($1, '2026_NCC_Group_Pentest_Report.pdf', '/uploads/mock1.pdf', 'application/pdf', 2450000, $2, 'Final executive summary attached. All criticals patched.', $3)", [comp1, secId, evidenceIso]);
+    
+    // Insert late evidence for the overdue task
+    await client.query("INSERT INTO evidence (obligation_id, file_name, file_path, mime_type, file_size_bytes, uploaded_by, reference_note, uploaded_at) VALUES ($1, 'Late_Access_Review_Log.csv', '/uploads/mock2.csv', 'text/csv', 1250000, $2, 'Uploaded after the SLA deadline. IAM review completed late.', $3)", [overdue1, secId, evidenceIso]);
 
     console.log('Generating Audit Trail history...');
     // We can omit the duplicate CREATE_OBLIGATION log here since it's now handled smoothly inside insertObligation

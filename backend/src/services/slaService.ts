@@ -97,9 +97,9 @@ export class SLAService {
 
     const breachedObligations = result.rows.filter((r: any) => r.risk_status === 'RED' && r.days_remaining !== null && r.days_remaining < 0);
     const breachReasons = [
-      { reason: 'Owner delays', count: breachedObligations.filter((o: any) => o.owner_name === null).length + Math.floor(breachedObligations.length * 0.4) },
+      { reason: 'Owner delays', count: breachedObligations.filter((o: any) => o.owner_name === null).length },
       { reason: 'Evidence uploaded late', count: breachedObligations.reduce((sum: number, o: any) => sum + (Number(o.late_evidence_count) || 0), 0) },
-      { reason: 'Handoff delays', count: Math.floor(breachedObligations.length * 0.2) }
+      { reason: 'Handoff delays', count: breachedObligations.filter((o: any) => o.owner_name !== null && (Number(o.late_evidence_count) || 0) === 0 && o.status !== 'closed').length }
     ].sort((a: any, b: any) => b.count - a.count);
 
     const recentBreaches = breachedObligations.slice(0, 5).map((o: any) => ({
