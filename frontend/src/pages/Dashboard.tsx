@@ -110,57 +110,68 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="page-header">
-        <h1>SLA Risk Dashboard</h1>
-        <a 
-          href={exportAPI.allZip()} 
-          className="btn btn-secondary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Export All (ZIP)
-        </a>
+      <div className="dashboard-header-bar">
+        <div className="dashboard-title-group">
+          <h1>SLA Risk Dashboard</h1>
+          <span className="subtitle">Real-time Regulatory Enforcement Engine</span>
+        </div>
+        <div className="dashboard-actions">
+          <a 
+            href={exportAPI.allZip()} 
+            className="btn btn-secondary btn-sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            REST API EXPORT (ZIP)
+          </a>
+        </div>
+      </div>
+
+      {/* DENSE METRICS RIBBON (Replaces boxes) */}
+      <div className="metrics-ribbon">
+        <Link to="/obligations" className="metric-column" style={{ textDecoration: 'none' }}>
+          <span className="metric-label">TOTAL OBLIGATIONS</span>
+          <span className="metric-value">{data.summary.total}</span>
+          <span className="metric-context">ACTIVE COMMITMENTS</span>
+        </Link>
+        <div className="metric-divider"></div>
+        <Link to="/obligations?status=ontrack" className="metric-column safe-status" style={{ textDecoration: 'none' }}>
+          <span className="metric-label">ON TRACK (&gt;15 DAYS)</span>
+          <span className="metric-value">{data.summary.green}</span>
+          <span className="metric-context">OUTSIDE RISK WINDOW</span>
+        </Link>
+        <div className="metric-divider"></div>
+        <Link to="/obligations?status=atrisk" className="metric-column warning-status" style={{ textDecoration: 'none' }}>
+          <span className="metric-label">AT RISK (1-15 DAYS)</span>
+          <span className="metric-value">{data.summary.amber}</span>
+          <span className="metric-context">APPROACHING WINDOW</span>
+        </Link>
+        <div className="metric-divider"></div>
+        <Link to="/obligations?status=breached" className="metric-column critical-status" style={{ textDecoration: 'none' }}>
+          <span className="metric-label">BREACHED / OVERDUE</span>
+          <span className="metric-value risk-pulse">{data.summary.red}</span>
+          <span className="metric-context">ACTIVE AUDIT EXPOSURE</span>
+        </Link>
       </div>
 
       <div className="dashboard-grid-layout">
         {/* Main Content Column */}
         <div className="dashboard-main-column">
-          {/* Summary Cards with RBI Risk Flags */}
-      <div className="summary-grid">
-        <div className="summary-card">
-          <div className="number">{data.summary.total}</div>
-          <div className="label">Total Obligations</div>
-          <div className="risk-context">Active regulatory commitments</div>
-        </div>
-        <div className="summary-card green">
-          <div className="number">{data.summary.green}</div>
-          <div className="label">On Track (&gt;15 days)</div>
-          <div className="risk-context">All SLAs outside regulatory risk window</div>
-        </div>
-        <div className="summary-card amber">
-          <div className="number">{data.summary.amber}</div>
-          <div className="label">At Risk (1-15 days)</div>
-          <div className="risk-context">SLA approaching regulatory window</div>
-        </div>
-        <div className="summary-card red">
-          <div className="number breach-pulse">{data.summary.red}</div>
-          <div className="label">Breached / Overdue</div>
-          <div className="risk-context">Potential audit exposure risk</div>
-        </div>
-      </div>
 
       {/* REGULATOR-GRADE INTELLIGENCE PANELS */}
-      <div className="intelligence-grid">
+      <div className="intelligence-grid-dense">
         {/* ADD #2 - BREACH REASON SUMMARY */}
-        <div className="intel-card">
-          <h3 className="intel-title">BREACH SOURCE ANALYSIS - CURRENT MONTH</h3>
-          <div className="breach-analysis-table">
-            <table className="analysis-table">
+        <div className="dense-panel">
+          <div className="panel-header">
+            <h3>BREACH SOURCE ANALYSIS (CURRENT MTH)</h3>
+          </div>
+          <div className="panel-body">
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Source</th>
-                  <th>Count</th>
-                  <th>% Contribution</th>
+                  <th>SOURCE</th>
+                  <th className="text-right">COUNT</th>
+                  <th className="text-right">% CONTRIB</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,27 +182,27 @@ const Dashboard: React.FC = () => {
                     return (
                       <tr key={idx}>
                         <td className="source-label">{reason.reason}</td>
-                        <td className="source-count">{reason.count}</td>
-                        <td className="source-percentage">{percentage}%</td>
+                        <td className="source-count text-right">{reason.count}</td>
+                        <td className="source-percentage text-right">{percentage}%</td>
                       </tr>
                     );
                   })
                 ) : (
                   <>
                     <tr>
-                      <td className="source-label">Owner Delays</td>
-                      <td className="source-count">7</td>
-                      <td className="source-percentage">63%</td>
+                      <td className="source-label">OWNER DELAYS</td>
+                      <td className="text-right">7</td>
+                      <td className="text-right">63%</td>
                     </tr>
                     <tr>
-                      <td className="source-label">Evidence Delays</td>
-                      <td className="source-count">3</td>
-                      <td className="source-percentage">27%</td>
+                      <td className="source-label">EVIDENCE LACKING</td>
+                      <td className="text-right">3</td>
+                      <td className="text-right">27%</td>
                     </tr>
                     <tr>
-                      <td className="source-label">Assignment Delays</td>
-                      <td className="source-count">1</td>
-                      <td className="source-percentage">10%</td>
+                      <td className="source-label">APPROVAL DELAYS</td>
+                      <td className="text-right">1</td>
+                      <td className="text-right">10%</td>
                     </tr>
                   </>
                 )}
@@ -201,40 +212,37 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* ADD #3 - DISCIPLINE SCORES */}
-        <div className="intel-card">
-          <h3 className="intel-title">COMPLIANCE DISCIPLINE METRICS</h3>
-          <div className="discipline-scores">
-            <div className="score-item">
-              <span className="score-label">Ownership Integrity</span>
-              <div className="score-wrapper">
-                <span className={`score-value ${(data.discipline_score?.ownership_integrity || 41) < 50 ? 'low' : (data.discipline_score?.ownership_integrity || 41) < 80 ? 'medium' : 'high'}`}>
-                  {data.discipline_score?.ownership_integrity || 41}%
-                </span>
-                {(data.discipline_score?.ownership_integrity || 41) < 60 && (
-                  <span className="score-warning">Below regulatory threshold</span>
-                )}
-              </div>
-            </div>
-            <div className="score-item">
-              <span className="score-label">Evidence Timeliness</span>
-              <div className="score-wrapper">
-                <span className={`score-value ${(data.discipline_score?.evidence_timeliness || 22) < 50 ? 'low' : (data.discipline_score?.evidence_timeliness || 22) < 80 ? 'medium' : 'high'}`}>
-                  {data.discipline_score?.evidence_timeliness || 22}%
-                </span>
-                {(data.discipline_score?.evidence_timeliness || 22) < 60 && (
-                  <span className="score-warning">Critical compliance gap</span>
-                )}
-              </div>
-            </div>
-            <div className="score-item">
-              <span className="score-label">Approval Cycles On Time</span>
-              <div className="score-wrapper">
-                <span className="score-value medium">
-                  55%
-                </span>
-                <span className="score-warning">Escalation protocol required</span>
-              </div>
-            </div>
+        <div className="dense-panel">
+          <div className="panel-header">
+            <h3>COMPLIANCE DISCIPLINE METRICS</h3>
+          </div>
+          <div className="panel-body">
+            <table className="dense-table">
+              <thead>
+                <tr>
+                  <th>METRIC</th>
+                  <th className="text-right">SCORE</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>OWNER INTEGRITY</td>
+                  <td className="text-right">41%</td>
+                  <td className="status-critical">CRITICAL</td>
+                </tr>
+                <tr>
+                  <td>EVIDENCE TIMELINESS</td>
+                  <td className="text-right">22%</td>
+                  <td className="status-critical">CRITICAL</td>
+                </tr>
+                <tr>
+                  <td>APPROVAL CYCLES</td>
+                  <td className="text-right">55%</td>
+                  <td className="status-warning">WARNING</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -243,142 +251,137 @@ const Dashboard: React.FC = () => {
       <SLAHeatmap obligations={data.obligations} />
 
       {/* PENDING APPROVALS SECTION - Compliance Workflow */}
-      <div className="card pending-approvals-card">
-        <div className="card-header">
-          <h2>PENDING APPROVALS</h2>
-          <span className="approvals-badge">Workflow Queue</span>
+      <div className="dense-panel pending-approvals-panel">
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>PENDING APPROVALS</h3>
+          <span className="approvals-badge" style={{ fontSize: '10px', fontWeight: 600, color: '#6B7280', letterSpacing: '1px' }}>WORKFLOW QUEUE</span>
         </div>
-        <div className="approvals-workflow">
-          <div className="workflow-steps">
-            <div className="workflow-step">
-              <div className="step-icon">1</div>
-              <div className="step-label">Operations Upload</div>
-              <div className="step-count pending">3 pending</div>
-            </div>
-            <div className="workflow-arrow">→</div>
-            <div className="workflow-step">
-              <div className="step-icon">2</div>
-              <div className="step-label">Risk Validation</div>
-              <div className="step-count pending">2 pending</div>
-            </div>
-            <div className="workflow-arrow">→</div>
-            <div className="workflow-step">
-              <div className="step-icon">3</div>
-              <div className="step-label">Compliance Approval</div>
-              <div className="step-count pending">4 pending</div>
-            </div>
-            <div className="workflow-arrow">→</div>
-            <div className="workflow-step">
-              <div className="step-icon">4</div>
-              <div className="step-label">GRO Final Closure</div>
-              <div className="step-count">1 pending</div>
-            </div>
+        
+        {/* Sleek inline workflow status (replaced clunky boxes) */}
+        <div className="approvals-workflow-dense">
+          <div className="workflow-steps-inline">
+            <span className="dense-step">
+              <span className="step-num">1</span> OPs UPLOAD: <span className="step-val text-red">3</span>
+            </span>
+            <span className="workflow-sep">/</span>
+            <span className="dense-step">
+              <span className="step-num">2</span> RISK VALIDATION: <span className="step-val text-amber">2</span>
+            </span>
+            <span className="workflow-sep">/</span>
+            <span className="dense-step">
+              <span className="step-num">3</span> COMPLIANCE APPROVAL: <span className="step-val text-amber">4</span>
+            </span>
+            <span className="workflow-sep">/</span>
+            <span className="dense-step">
+              <span className="step-num">4</span> GRO CLOSURE: <span className="step-val">1</span>
+            </span>
           </div>
         </div>
-        <div className="approval-queue">
-          <table className="approval-table">
-            <thead>
+
+        <div className="panel-body" style={{ padding: 0 }}>
+          <table className="dense-table" style={{ width: '100%' }}>
+            <thead style={{ backgroundColor: '#F9FAFB' }}>
               <tr>
-                <th>Obligation</th>
-                <th>Submitted By</th>
-                <th>Stage</th>
-                <th>Waiting Since</th>
-                <th>Actions</th>
+                <th>OBLIGATION</th>
+                <th>SUBMITTED BY</th>
+                <th>STAGE</th>
+                <th className="text-right">WAITING SINCE</th>
+                <th className="text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="approval-row urgent">
+              <tr>
                 <td>
-                  <Link to="/obligations/1">KYC Documentation Update</Link>
-                  <span className="regulation-mini">RBI/KYC/2025</span>
+                  <Link to="/obligations/1" style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>KYC Documentation Update</Link>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>RBI/KYC/2025</div>
                 </td>
-                <td>Rahul Sharma</td>
-                <td><span className="stage-badge compliance">Compliance Approval</span></td>
-                <td><span className="waiting-time critical">3 days</span></td>
-                <td className="approval-actions">
-                  <button className="btn btn-sm btn-outline">Reject</button>
-                  <button className="btn btn-sm btn-primary">Approve</button>
+                <td style={{ color: '#374151' }}>Rahul Sharma</td>
+                <td><span style={{ fontSize: '10px', padding: '2px 6px', background: '#F3F4F6', color: '#374151', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>COMPLIANCE</span></td>
+                <td className="text-right status-critical">3 DAYS</td>
+                <td className="text-right">
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: 'transparent', border: '1px solid #D1D5DB', borderRadius: '4px', marginRight: '6px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>REJECT</button>
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: '#111827', color: 'white', border: '1px solid #111827', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>APPROVE</button>
                 </td>
               </tr>
-              <tr className="approval-row">
+              <tr>
                 <td>
-                  <Link to="/obligations/2">Monthly AML Report</Link>
-                  <span className="regulation-mini">PMLA/2025</span>
+                  <Link to="/obligations/2" style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>Monthly AML Report</Link>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>PMLA/2025</div>
                 </td>
-                <td>Priya Patel</td>
-                <td><span className="stage-badge risk">Risk Validation</span></td>
-                <td><span className="waiting-time">1 day</span></td>
-                <td className="approval-actions">
-                  <button className="btn btn-sm btn-outline">Reject</button>
-                  <button className="btn btn-sm btn-primary">Approve</button>
+                <td style={{ color: '#374151' }}>Priya Patel</td>
+                <td><span style={{ fontSize: '10px', padding: '2px 6px', background: '#F3F4F6', color: '#374151', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>RISK VAL</span></td>
+                <td className="text-right" style={{ color: '#6B7280', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>1 DAY</td>
+                <td className="text-right">
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: 'transparent', border: '1px solid #D1D5DB', borderRadius: '4px', marginRight: '6px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>REJECT</button>
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: '#111827', color: 'white', border: '1px solid #111827', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>APPROVE</button>
                 </td>
               </tr>
-              <tr className="approval-row">
+              <tr>
                 <td>
-                  <Link to="/obligations/3">Fair Practice Code Review</Link>
-                  <span className="regulation-mini">RBI/FPC/2024</span>
+                  <Link to="/obligations/3" style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>Fair Practice Code Review</Link>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>RBI/FPC/2024</div>
                 </td>
-                <td>Amit Kumar</td>
-                <td><span className="stage-badge gro">GRO Closure</span></td>
-                <td><span className="waiting-time">2 hours</span></td>
-                <td className="approval-actions">
-                  <button className="btn btn-sm btn-outline">Reject</button>
-                  <button className="btn btn-sm btn-primary">Approve</button>
+                <td style={{ color: '#374151' }}>Amit Kumar</td>
+                <td><span style={{ fontSize: '10px', padding: '2px 6px', background: '#F3F4F6', color: '#374151', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>GRO CLOSURE</span></td>
+                <td className="text-right" style={{ color: '#6B7280', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>2 HOURS</td>
+                <td className="text-right">
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: 'transparent', border: '1px solid #D1D5DB', borderRadius: '4px', marginRight: '6px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>REJECT</button>
+                  <button style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: '#111827', color: 'white', border: '1px solid #111827', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>APPROVE</button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div className="approvals-footer">
-          <Link to="/my-tasks" className="view-all-link">View All My Approvals →</Link>
+        <div style={{ padding: '16px 20px', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
+          <Link to="/my-tasks" style={{ fontSize: '12px', fontWeight: 600, color: '#111827', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            VIEW ALL MY APPROVALS <span style={{ marginLeft: '4px', fontFamily: 'var(--font-mono)' }}>→</span>
+          </Link>
         </div>
       </div>
 
       {/* ADD #4 - LAST 5 BREACHES */}
       {data.recent_breaches && data.recent_breaches.length > 0 && (
-        <div className="card breach-history-card">
-          <div className="card-header">
-            <h2>REGULATORY BREACH REGISTER</h2>
-            <span className="breach-count-badge">{data.recent_breaches.length} total</span>
+        <div className="dense-panel">
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: '12px', fontWeight: 600, color: '#111827', margin: 0, letterSpacing: '0.05em' }}>REGULATORY BREACH REGISTER</h2>
+            <span style={{ fontSize: '10px', background: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{data.recent_breaches.length} TOTAL</span>
           </div>
-          <div className="table-container">
-            <table>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Obligation</th>
-                  <th>Breach Reason</th>
-                  <th>Days Overdue</th>
-                  <th>Owner at Breach</th>
-                  <th>Actions</th>
+                  <th>OBLIGATION</th>
+                  <th>BREACH REASON</th>
+                  <th className="text-right">DAYS OVERDUE</th>
+                  <th>OWNER AT BREACH</th>
+                  <th className="text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recent_breaches.slice(0, 5).map((breach) => (
-                  <tr key={breach.id} className="breach-row">
+                  <tr key={breach.id}>
                     <td>
-                      <Link to={`/obligations/${breach.id}`}>
+                      <Link to={`/obligations/${breach.id}`} style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>
                         {breach.title}
                       </Link>
                       {breach.regulation_tag && (
-                        <div style={{ fontSize: '12px', color: '#666' }}>
+                        <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
                           {breach.regulation_tag}
                         </div>
                       )}
                     </td>
                     <td>
-                      <span className="breach-reason-badge">
-                        {breach.breach_reason}
+                      <span style={{ fontSize: '10px', padding: '2px 6px', background: '#FEE2E2', color: '#B91C1C', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                        {breach.breach_reason.toUpperCase()}
                       </span>
                     </td>
-                    <td>
-                      <span className="overdue-badge">
-                        {breach.days_overdue} days
-                      </span>
+                    <td className="text-right" style={{ color: '#B91C1C', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                      {breach.days_overdue} DAYS
                     </td>
-                    <td>{breach.owner_name || 'Unassigned'}</td>
-                    <td>
-                      <Link to={`/obligations/${breach.id}`} className="btn btn-sm btn-outline">
-                        Investigate
+                    <td style={{ color: '#374151' }}>{breach.owner_name || 'UNASSIGNED'}</td>
+                    <td className="text-right">
+                      <Link to={`/obligations/${breach.id}`} style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: 'transparent', border: '1px solid #D1D5DB', borderRadius: '4px', color: '#374151', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
+                        INVESTIGATE
                       </Link>
                     </td>
                   </tr>
@@ -390,88 +393,88 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Obligations Table */}
-      <div className="card">
-        <div className="card-header">
-          <h2>All Obligations</h2>
-          <Link to="/obligations/new" className="btn btn-primary">
-            + New Obligation
+      <div className="dense-panel">
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '12px', fontWeight: 600, color: '#111827', margin: 0, letterSpacing: '0.05em' }}>ALL OBLIGATIONS</h2>
+          <Link to="/obligations/new" style={{ padding: '6px 12px', fontSize: '10px', fontWeight: 600, backgroundColor: '#111827', color: 'white', border: '1px solid #111827', borderRadius: '4px', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
+            + NEW OBLIGATION
           </Link>
         </div>
 
         {data.obligations.length === 0 ? (
-          <div className="empty-state">
-            <h3>No obligations yet</h3>
-            <p>Create your first compliance obligation to get started.</p>
+          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>No obligations yet</h3>
+            <p style={{ fontSize: '12px', color: '#6B7280' }}>Create your first compliance obligation to get started.</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Status</th>
-                  <th>Title</th>
-                  <th>Owner</th>
-                  <th>SLA Due Date</th>
-                  <th>Days to Breach</th>
-                  <th>Evidence</th>
-                  <th>Actions</th>
+                  <th>STATUS</th>
+                  <th>TITLE</th>
+                  <th>OWNER</th>
+                  <th>SLA DUE DATE</th>
+                  <th className="text-right">DAYS TO BREACH</th>
+                  <th>EVIDENCE</th>
+                  <th className="text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {data.obligations.map((obligation) => (
                   <tr key={obligation.id}>
                     <td>
-                      <span className={`status-badge status-${obligation.risk_status.toLowerCase()}`}>
-                        {obligation.risk_status}
+                      <span style={{ fontSize: '10px', padding: '2px 6px', background: obligation.risk_status === 'CRITICAL' ? '#FEE2E2' : obligation.risk_status === 'HIGH' ? '#FEF3C7' : '#D1FAE5', color: obligation.risk_status === 'CRITICAL' ? '#B91C1C' : obligation.risk_status === 'HIGH' ? '#B45309' : '#047857', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                        {obligation.risk_status.toUpperCase()}
                       </span>
                     </td>
                     <td>
-                      <Link to={`/obligations/${obligation.id}`}>
+                      <Link to={`/obligations/${obligation.id}`} style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>
                         {obligation.title}
                       </Link>
                       {obligation.regulation_tag && (
-                        <div style={{ fontSize: '12px', color: '#666' }}>
+                        <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
                           {obligation.regulation_tag}
                         </div>
                       )}
                     </td>
-                    <td>{obligation.owner_name || 'Unassigned'}</td>
-                    <td>
+                    <td style={{ color: '#374151' }}>{obligation.owner_name || 'UNASSIGNED'}</td>
+                    <td style={{ color: '#374151', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                       {obligation.due_date 
-                        ? new Date(obligation.due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
-                        : 'No SLA'}
+                        ? new Date(obligation.due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() 
+                        : 'NO SLA'}
                     </td>
-                    <td>
-                      <span className={`days-remaining ${getDaysRemainingClass(obligation.days_remaining)}`}>
-                        {formatDaysRemaining(obligation.days_remaining, obligation.risk_status)}
+                    <td className="text-right">
+                      <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', color: obligation.days_remaining && obligation.days_remaining < 3 ? '#B91C1C' : '#374151' }}>
+                        {formatDaysRemaining(obligation.days_remaining, obligation.risk_status).toUpperCase()}
                       </span>
                       {obligation.days_remaining !== null && obligation.days_remaining < 0 && Math.abs(obligation.days_remaining) > 30 && (
-                        <div className="micro-warning">
-                          Likely violation of RBI Master Direction
+                        <div style={{ fontSize: '9px', color: '#B91C1C', marginTop: '4px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                          LIKELY VIOLATION OF RBI MASTER DIRECTION
                         </div>
                       )}
                       {obligation.days_remaining !== null && obligation.days_remaining < 0 && Math.abs(obligation.days_remaining) <= 30 && (
-                        <div className="micro-warning">
-                          Audit exposure risk
+                        <div style={{ fontSize: '9px', color: '#B91C1C', marginTop: '4px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                          AUDIT EXPOSURE RISK
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td style={{ color: '#374151', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                       {obligation.evidence_count || 0}
                       {obligation.late_evidence_count > 0 && (
-                        <span style={{ color: '#c0392b', marginLeft: '4px' }}>
-                          ({obligation.late_evidence_count} late)
+                        <span style={{ color: '#B91C1C', marginLeft: '4px', fontWeight: 600 }}>
+                          ({obligation.late_evidence_count} LATE)
                         </span>
                       )}
-                      {obligation.evidence_count === 0 && obligation.risk_status === 'RED' && (
-                        <div className="micro-warning">
-                          Not defensible in audit
+                      {obligation.evidence_count === 0 && obligation.risk_status === 'CRITICAL' && (
+                        <div style={{ fontSize: '9px', color: '#B91C1C', marginTop: '4px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                          NOT DEFENSIBLE IN AUDIT
                         </div>
                       )}
                     </td>
-                    <td>
-                      <Link to={`/obligations/${obligation.id}`} className="btn btn-sm btn-outline">
-                        View
+                    <td className="text-right">
+                      <Link to={`/obligations/${obligation.id}`} style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 600, backgroundColor: 'transparent', border: '1px solid #D1D5DB', borderRadius: '4px', color: '#374151', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
+                        VIEW
                       </Link>
                     </td>
                   </tr>

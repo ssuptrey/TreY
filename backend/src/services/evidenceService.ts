@@ -52,6 +52,24 @@ export class EvidenceService {
         additionalContext: isLate ? { warning: 'Evidence uploaded after SLA due date' } : undefined
       });
 
+      // Auto-close obligation upon evidence upload
+      if (obligationCheck.rows[0].status === 'open') {
+        await client.query(
+          `UPDATE obligations SET status = $1, closed_at = NOW() WHERE id = $2 RETURNING *`,
+          ['closed', obligationId]
+        );
+        
+        await createAuditLog({
+          entityType: 'obligation',
+          entityId: obligationId,
+          action: AuditActions.OBLIGATION_STATUS_CHANGE,
+          performedBy: userId,
+          newValue: { status: 'closed', previousStatus: 'open', reason: 'Auto-closed after evidence upload' },
+          ipAddress,
+          userAgent
+        });
+      }
+
       await client.query('COMMIT');
       return { success: true, evidence, isLate };
     } catch (error: any) {

@@ -2,7 +2,7 @@
 // OBLIGATIONS LIST PAGE
 // ============================================
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { obligationsAPI } from '../api';
 
 interface Obligation {
@@ -18,24 +18,42 @@ interface Obligation {
   created_at: string;
 }
 
+
 const Obligations: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const initialFilter = searchParams.get('status') || 'all';
+
   const [obligations, setObligations] = useState<Obligation[]>([]);
+  const [displayedObligations, setDisplayedObligations] = useState<Obligation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>(initialFilter);
 
   useEffect(() => {
     loadObligations();
-  }, [filter]);
+  }, []);
+
+  useEffect(() => {
+    // Apply client-side filtering for statuses not supported natively by DB
+    if (filter === 'ontrack') {
+      setDisplayedObligations(obligations.filter(o => (o.days_remaining ?? 0) > 15 && o.status !== 'closed' && o.status !== 'breached'));
+    } else if (filter === 'atrisk') {
+      setDisplayedObligations(obligations.filter(o => (o.days_remaining ?? 0) > 0 && (o.days_remaining ?? 0) <= 15 && o.status !== 'closed' && o.status !== 'breached'));
+    } else if (filter === 'breached') {
+      setDisplayedObligations(obligations.filter(o => o.status === 'breached' || (o.days_remaining !== null && o.days_remaining < 0)));
+    } else if (filter === 'open' || filter === 'closed') {
+      setDisplayedObligations(obligations.filter(o => o.status === filter));
+    } else {
+      setDisplayedObligations(obligations);
+    }
+  }, [filter, obligations]);
 
   const loadObligations = async (): Promise<void> => {
     try {
       const params: Record<string, string> = {};
-      if (filter !== 'all') {
-        params.status = filter;
-      }
       const response = await obligationsAPI.list(params);
-      setObligations(response.data.data as any || []);
+      const data = response.data as any;
+      setObligations(data.obligations || data.data || []);
     } catch (err) {
       setError('Failed to load obligations');
     } finally {
@@ -56,9 +74,9 @@ const Obligations: React.FC = () => {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>Obligations</h1>
-        <Link to="/obligations/new" className="btn btn-primary">
+      <div className="page-header" style={{ padding: '24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E5E7EB', marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>OBLIGATIONS</h1>
+        <Link to="/obligations/new" style={{ padding: '8px 16px', fontSize: '11px', fontWeight: 600, backgroundColor: '#111827', color: 'white', border: '1px solid #111827', borderRadius: '0px', textDecoration: 'none', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
           + New Obligation
         </Link>
       </div>
@@ -66,39 +84,36 @@ const Obligations: React.FC = () => {
       {error && <div className="alert alert-error">{error}</div>}
 
       {/* Filters */}
-      <div className="card" style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontWeight: '500' }}>Filter:</span>
-          <button 
-            className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
-          <button 
-            className={`btn btn-sm ${filter === 'open' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setFilter('open')}
-          >
-            Open
-          </button>
-          <button 
-            className={`btn btn-sm ${filter === 'closed' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setFilter('closed')}
-          >
-            Closed
-          </button>
-          <button 
-            className={`btn btn-sm ${filter === 'breached' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setFilter('breached')}
-          >
-            Breached
-          </button>
+      <div className="dense-panel" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '8px' }}>FILTER:</span>
+          {['all', 'open', 'closed', 'ontrack', 'atrisk', 'breached'].map((f) => (
+            <button 
+              key={f}
+              onClick={() => setFilter(f)}
+              style={{
+                padding: '4px 12px',
+                fontSize: '11px',
+                fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+                border: `1px solid ${filter === f ? '#111827' : '#D1D5DB'}`,
+                backgroundColor: filter === f ? '#111827' : 'transparent',
+                color: filter === f ? 'white' : '#6B7280',
+                borderRadius: '0px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {f === 'ontrack' ? 'On Track' : f === 'atrisk' ? 'At Risk' : f}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Obligations Table */}
-      <div className="card">
-        {obligations.length === 0 ? (
+      <div className="dense-panel">
+        {displayedObligations.length === 0 ? (
           <div className="empty-state">
             <h3>No obligations found</h3>
             <p>
@@ -109,50 +124,50 @@ const Obligations: React.FC = () => {
           </div>
         ) : (
           <div className="table-container">
-            <table>
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Risk</th>
-                  <th>Title</th>
-                  <th>Regulation Tag</th>
-                  <th>Owner</th>
-                  <th>Due Date</th>
-                  <th>Days Remaining</th>
-                  <th>Evidence</th>
-                  <th>Created</th>
+                  <th>RISK</th>
+                  <th>TITLE</th>
+                  <th>REGULATION TAG</th>
+                  <th>OWNER</th>
+                  <th>DUE DATE</th>
+                  <th className="text-right">DAYS REMAINING</th>
+                  <th className="text-right">EVIDENCE</th>
+                  <th className="text-right">CREATED</th>
                 </tr>
               </thead>
               <tbody>
-                {obligations.map((obligation) => (
+                {displayedObligations.map((obligation) => (
                   <tr key={obligation.id}>
                     <td>
-                      <span className={`status-badge status-${obligation.risk_status.toLowerCase()}`}>
-                        {obligation.risk_status}
+                      <span style={{ fontSize: '10px', padding: '2px 6px', background: obligation.risk_status === 'CRITICAL' || obligation.risk_status === 'RED' ? '#FEE2E2' : obligation.risk_status === 'HIGH' || obligation.risk_status === 'AMBER' ? '#FEF3C7' : '#D1FAE5', color: obligation.risk_status === 'CRITICAL' || obligation.risk_status === 'RED' ? '#B91C1C' : obligation.risk_status === 'HIGH' || obligation.risk_status === 'AMBER' ? '#B45309' : '#047857', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                        {obligation.risk_status.toUpperCase()}
                       </span>
                     </td>
                     <td>
-                      <Link to={`/obligations/${obligation.id}`}>
+                      <Link to={`/obligations/${obligation.id}`} style={{ fontWeight: 600, color: '#111827', textDecoration: 'none' }}>
                         {obligation.title}
                       </Link>
                     </td>
-                    <td>{obligation.regulation_tag || '-'}</td>
-                    <td>{obligation.owner_name || 'Unassigned'}</td>
-                    <td>
+                    <td style={{ color: '#6B7280', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{obligation.regulation_tag || '-'}</td>
+                    <td style={{ color: '#374151' }}>{obligation.owner_name || 'UNASSIGNED'}</td>
+                    <td style={{ color: '#374151', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                       {obligation.sla_due_date 
-                        ? new Date(obligation.sla_due_date) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
-                        : 'No SLA'}
+                        ? new Date(obligation.sla_due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() 
+                        : 'NO SLA'}
                     </td>
-                    <td>
+                    <td className="text-right" style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', color: obligation.days_remaining !== null && obligation.days_remaining < 3 ? '#B91C1C' : '#374151' }}>
                       {obligation.days_remaining !== null && (
-                        <span className={`days-remaining ${getDaysRemainingClass(obligation.days_remaining)}`}>
+                        <span>
                           {obligation.days_remaining < 0 
-                            ? `${Math.abs(obligation.days_remaining)} days overdue`
-                            : `${obligation.days_remaining} days`}
+                            ? `${Math.abs(obligation.days_remaining)} DAYS OVERDUE`
+                            : `${obligation.days_remaining} DAYS`}
                         </span>
                       )}
                     </td>
-                    <td>{obligation.evidence_count || 0}</td>
-                    <td>{new Date(obligation.created_at) .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }</td>
+                    <td className="text-right" style={{ color: '#374151', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{obligation.evidence_count || 0}</td>
+                    <td className="text-right" style={{ color: '#6B7280', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{new Date(obligation.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</td>
                   </tr>
                 ))}
               </tbody>

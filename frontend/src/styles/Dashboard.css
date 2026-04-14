@@ -1,14 +1,14 @@
-﻿/* ============================================
+/* ============================================
    REGULATOR-GRADE ENFORCEMENT SYSTEM
    ============================================ */
 
-/* SOR Seal â€” iOS style */
+/* SOR Seal — iOS style */
 .sor-seal {
   background-color: #ffffff;
   border: none;
   margin-bottom: 28px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -29,7 +29,7 @@
   letter-spacing: 1.2px;
   margin-bottom: 8px;
   border: none;
-  border-radius: 20px;
+  border-radius: 0;
 }
 
 .seal-title {
@@ -60,7 +60,7 @@
   padding: 10px 12px;
   background-color: #ffffff;
   border-left: 3px solid #d1d1d6;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
 }
 
 .guarantee-icon {
@@ -87,69 +87,150 @@
   font-weight: 500;
 }
 
-/* Intelligence Grid â€” iOS style */
-/* Intelligence Grid — Premium SaaS */
-.intelligence-grid {
+/* Intelligence Grid — iOS style */
+/* ============================================
+   STRICT COMPLIANCE DATA BAR (Replaces Bento Grid)
+   ============================================ */
+
+.dashboard-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-title-group h1 {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-title-group .subtitle {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metrics-ribbon {
+  display: flex;
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 0;
+  margin-bottom: 32px;
+}
+
+.metric-column {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+a.metric-column:hover {
+  background-color: #F9FAFB;
+  cursor: pointer;
+}
+
+.metric-divider {
+  width: 1px;
+  background-color: #E5E7EB;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4B5563;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.metric-context {
+  font-size: 10px;
+  color: #6B7280;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metric-column.safe-status .metric-value { color: #16A34A; }
+.metric-column.warning-status .metric-value { color: #D97706; }
+.metric-column.critical-status .metric-value { color: #DC2626; }
+
+/* Density Grid Panels */
+.intelligence-grid-dense {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  margin-bottom: 28px;
-  background-color: transparent;
+  margin-bottom: 24px;
+}
+
+.dense-panel {
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
   border-radius: 0;
-  border: none;
-  box-shadow: none;
-  overflow: visible;
 }
 
-.intel-card {
-  background-color: #ffffff;
-  border-radius: 20px;
-  padding: 32px;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.dense-panel .panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  background-color: #F9FAFB;
 }
 
-.intel-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.04);
-}
-
-.intel-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
-  opacity: 0.8;
-}
-
-.intel-title {
-  font-size: 18px;
+.dense-panel .panel-header h3 {
+  margin: 0;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: #374151;
   font-weight: 700;
-  margin: 0 0 24px 0;
-  color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: none;
-  font-family: 'Inter', sans-serif;
-  padding-bottom: 0;
+  letter-spacing: 0.05em;
+}
+
+.dense-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dense-table th, .dense-table td {
+  padding: 12px 20px;
+  font-size: 13px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.dense-table th {
+  font-size: 10px;
+  color: #6B7280;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #FFFFFF;
+}
+
+.dense-table tr:last-child td {
   border-bottom: none;
 }
 
-.intel-title::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #6366f1;
+.text-right {
+  text-align: right;
 }
+
+.status-critical { color: #DC2626; font-weight: 600; font-size: 11px; font-family: var(--font-mono); }
+.status-warning { color: #D97706; font-weight: 600; font-size: 11px; font-family: var(--font-mono); }
+.status-safe { color: #16A34A; font-weight: 600; font-size: 11px; font-family: var(--font-mono); }
 
 /* Risk Context Under Summary Cards */
 .risk-context {
@@ -295,7 +376,7 @@
 /* Recent Breaches Section */
 .breach-history-card {
   border-top: 3px solid #ff3b30;
-  border-radius: 14px;
+  border-radius: 0;
   border: none;
   border-top: 3px solid #ff3b30;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
@@ -318,7 +399,7 @@
   background-color: #ff3b30;
   color: white;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -339,7 +420,7 @@
   padding: 4px 10px;
   background-color: rgba(255, 159, 10, 0.1);
   color: #9a6700;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -352,14 +433,14 @@
   padding: 4px 12px;
   background-color: rgba(255, 59, 48, 0.08);
   color: #d63029;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 700;
   border: none;
   font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
 }
 
-/* Micro-Warnings â€” iOS style */
+/* Micro-Warnings — iOS style */
 .micro-warning {
   font-size: 10px;
   color: #d63029;
@@ -368,7 +449,7 @@
   margin-top: 4px;
   display: inline-block;
   border-left: none;
-  border-radius: 6px;
+  border-radius: 0;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -381,7 +462,7 @@
 /* Removed override */
 
 /* ============================================
-   REGULATORY INTELLIGENCE BAR â€” iOS
+   REGULATORY INTELLIGENCE BAR — iOS
    ============================================ */
 .regulatory-intel-bar {
   background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
@@ -392,7 +473,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #34c759;
-  border-radius: 14px 14px 0 0;
+  border-radius: 0;
 }
 
 .intel-bar-left {
@@ -408,7 +489,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .intel-stat {
@@ -441,7 +522,7 @@
   border: 1px solid #48484a;
   color: #aeaeb2;
   font-size: 11px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .btn-intel:hover {
@@ -450,14 +531,14 @@
 }
 
 /* ============================================
-   PREDICTIVE BREACH RISK PANEL â€” iOS
+   PREDICTIVE BREACH RISK PANEL — iOS
    ============================================ */
 .predictive-risk-panel {
   background-color: #ffffff;
   border: none;
   margin-bottom: 24px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -489,7 +570,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .model-info {
@@ -543,7 +624,7 @@
   padding: 10px 14px;
   background-color: #f9f9fb;
   border-left: 3px solid #d1d1d6;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
 }
 
 .risk-factor .factor-icon {
@@ -554,7 +635,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 11px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .risk-factor .factor-icon.high {
@@ -584,7 +665,7 @@
   background-color: #ff9f0a;
   color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .btn-warning:hover {
@@ -629,7 +710,7 @@
 
 .intel-card {
   background: white;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 20px;
   border: 1px solid var(--border-default);
 }
@@ -750,7 +831,7 @@
   background: var(--risk-critical);
   color: white;
   padding: 4px 10px;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -766,7 +847,7 @@
   background: var(--risk-critical-bg);
   border: 1px solid var(--risk-critical-border);
   color: var(--risk-critical);
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 500;
 }
@@ -776,7 +857,7 @@
   padding: 4px 10px;
   background: var(--risk-critical);
   color: white;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -803,7 +884,7 @@
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -834,7 +915,7 @@
 .step-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--primary-500);
   color: white;
   display: flex;
@@ -855,7 +936,7 @@
   color: var(--text-muted);
   padding: 2px 8px;
   background: white;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid var(--border-default);
 }
 
@@ -925,7 +1006,7 @@
 .stage-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
 }

@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    COMPLIANCE EXECUTION SYSTEM - STYLES
    Simple UI, boring design (as required)
    ============================================ */
@@ -6,6 +6,22 @@
 /* Base styles */
 * {
   box-sizing: border-box;
+}
+
+/* Make global scrollbars thin and professional on Windows */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 body {
@@ -34,7 +50,8 @@ body {
 .layout-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background-color: #F8FAFC; /* premium SaaS light slate */
 }
 
@@ -71,7 +88,7 @@ body {
 }
 
 .sidebar-brand {
-  padding: 32px 24px 24px;
+  padding: 24px 20px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -91,23 +108,32 @@ body {
   letter-spacing: 1px;
   background: rgba(99, 102, 241, 0.1);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 0;
   display: inline-block;
 }
 
 .sidebar-nav {
-  padding: 32px 24px;
+  padding: 24px 20px;
   flex: 1;
   overflow-y: auto;
+  
+  /* Ensure no ugly scrollbars appear on the sidebar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
 }
 
 .nav-section-title {
   color: #475569;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   padding-left: 8px;
 }
 
@@ -117,17 +143,17 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .nav-item {
   display: block;
-  padding: 12px 16px;
+  padding: 10px 16px;
   color: #94A3B8;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: 0;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -143,11 +169,11 @@ body {
   color: #818CF8;
   font-weight: 700;
   border-left: 3px solid #6366F1;
-  border-radius: 0 12px 12px 0;
+  border-radius: 0;
 }
 
 .sidebar-footer {
-  padding: 20px;
+  padding: 16px 20px;
   border-top: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
@@ -164,7 +190,7 @@ body {
 .user-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 18px;
+  border-radius: 0;
   background-color: #38bdf8;
   color: #0f172a;
   display: flex;
@@ -202,7 +228,7 @@ body {
   background: transparent;
   color: #94a3b8;
   border: 1px solid #334155;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -220,122 +246,113 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #F8FAFC;
+  background-color: #F0F2F5; /* Industrial light gray */
   overflow: auto;
   position: relative;
 }
 
-/* Subtle background gradient behind the header */
-.main-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 300px;
-  background: linear-gradient(180deg, #E2E8F0 0%, #F8FAFC 100%);
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
 .top-header {
-  height: 80px;
-  background-color: transparent;
-  border-bottom: none;
+  height: 60px;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #D1D5DB;
   display: flex;
   align-items: center;
   padding: 0 48px;
-  box-shadow: none;
   flex-shrink: 0;
   position: relative;
   z-index: 10;
 }
 
 .breadcrumb-text {
-  font-size: 28px;
-  font-weight: 800;
-  color: #0F172A;
-  letter-spacing: -0.03em;
-  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
 }
 
 .main-content {
   flex: 1;
-  padding: 24px 48px 48px;
-  max-width: 1400px;
+  padding: 32px 48px 48px;
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   position: relative;
   z-index: 10;
 }
 
-/* Buttons — Enterprise Style */
+/* Buttons � Strict Institutional Style */
 .btn {
   display: inline-block;
-  padding: 10px 20px;
-  font-size: 15px;
-  font-weight: 500;
-  font-family: inherit;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s ease-in-out;
   text-align: center;
+  letter-spacing: 0.05em;
 }
 
 .btn-primary {
-  background-color: #4f46e5; /* Indigo 600 */
+  background-color: #111827;
   color: white;
-  box-shadow: 0 1px 2px 0 rgba(79, 70, 229, 0.4);
+  border-color: #111827;
+  box-shadow: none;
 }
 
 .btn-primary:hover {
-  background-color: #4338ca; /* Indigo 700 */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4), 0 2px 4px -1px rgba(79, 70, 229, 0.2);
+  background-color: #374151;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  background-color: #e5e5ea;
-  color: #1c1c1e;
+  background-color: #F3F4F6;
+  color: #111827;
+  border: 1px solid #D1D5DB;
 }
 
 .btn-secondary:hover {
-  background-color: #d1d1d6;
+  background-color: #E5E7EB;
 }
 
 .btn-danger {
-  background-color: #ff3b30;
-  color: white;
+  background-color: transparent;
+  color: #DC2626;
+  border-color: #DC2626;
 }
 
 .btn-danger:hover {
-  background-color: #d63029;
+  background-color: #FEE2E2;
 }
 
 .btn-outline {
-  background-color: white;
-  border: 1px solid #cbd5e1;
-  color: #475569;
-  border-radius: 6px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background-color: transparent;
+  border: 1px solid #D1D5DB;
+  color: #374151;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .btn-outline:hover {
-  background-color: #f8fafc;
-  color: #0f172a;
-  border-color: #94a3b8;
+  background-color: #F9FAFB;
+  color: #111827;
+  border-color: #111827;
 }
 
 .btn-sm {
-  padding: 5px 10px;
-  font-size: 12px;
-  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 10px;
+  border-radius: 0;
 }
 
-/* Forms — Enterprise Style */
+/* Forms � Enterprise Style */
 .form-group {
   margin-bottom: 24px;
 }
@@ -356,7 +373,7 @@ body {
   font-size: 16px;
   font-family: inherit;
   border: 1px solid #cbd5e1; /* Slate 300 */
-  border-radius: 8px;
+  border-radius: 0;
   background-color: #f8fafc; /* Slate 50 */
   color: #1e293b;
   transition: all 0.2s ease;
@@ -387,36 +404,41 @@ body {
   margin-top: 5px;
 }
 
-/* Cards — Enterprise style */
+/* Cards � Dense Governance style */
 .card {
   background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
+  border: 1px solid #E5E7EB;
+  border-radius: 0;
+  padding: 0;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  background-color: #F9FAFB;
 }
 
 .card-header h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: -0.2px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #111827;
 }
 
 .card-header h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #374151;
 }
 
 /* Tables */
@@ -449,11 +471,11 @@ tr:hover {
   background-color: #f9f9fb;
 }
 
-/* Risk status badges â€” iOS pill style */
+/* Risk status badges — iOS pill style */
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -480,7 +502,7 @@ tr:hover {
   color: #636366;
 }
 
-/* Dashboard summary cards â€” iOS style */
+/* Dashboard summary cards — iOS style */
 /* ============================================
    PREMIUM SAAS DASHBOARD LOOK (Conceptzilla Style)
    ============================================ */
@@ -494,7 +516,7 @@ tr:hover {
 
 .summary-card {
   background-color: #ffffff;
-  border-radius: 24px;
+  border-radius: 0;
   padding: 28px 24px;
   position: relative;
   text-align: left;
@@ -519,7 +541,7 @@ tr:hover {
   right: 0;
   width: 150px;
   height: 150px;
-  border-radius: 50%;
+  border-radius: 0;
   filter: blur(50px);
   opacity: 0.15;
   pointer-events: none;
@@ -579,7 +601,7 @@ tr:hover {
 /* Alert messages */
 .alert {
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 0;
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -608,43 +630,45 @@ tr:hover {
   border: 1px solid #bee5eb;
 }
 
-/* Auth pages - Enterprise SaaS Edition */
+/* Auth pages - Strict Institutional Edition */
 .auth-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0f172a; /* Slate 900 */
-  background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+  background-color: #F9FAFB;
 }
 
 .auth-card {
   background-color: white;
   padding: 48px;
-  border-radius: 12px;
+  border-radius: 0;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-  border: 1px solid #1e293b;
+  box-shadow: none;
+  border: 1px solid #E5E7EB;
 }
 
 .auth-card h1 {
   margin: 0 0 8px 0;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
-  color: #0f172a;
+  color: #111827;
   text-align: center;
-  letter-spacing: -0.025em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
 }
 
 .auth-card .subtitle {
   text-align: center;
-  color: #4f46e5; /* Indigo 600 */
+  color: #374151;
   margin-bottom: 32px;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  font-family: var(--font-mono);
 }
 
 .auth-card .form-actions {
@@ -653,28 +677,27 @@ tr:hover {
 
 .auth-card .btn {
   width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 12px;
+  font-size: 12px;
 }
 
 .auth-card .auth-link {
   text-align: center;
   margin-top: 24px;
-  font-size: 14px;
-  color: #64748b;
+  font-size: 11px;
+  color: #6B7280;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
 }
 
 .auth-card .auth-link a {
-  color: #4f46e5;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.15s ease;
+  color: #111827;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .auth-card .auth-link a:hover {
-  color: #4338ca;
+  color: #374151;
 }
 
 /* Detail page sections */
@@ -740,7 +763,7 @@ tr:hover {
   top: 4px;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: #4a90d9;
   border: 2px solid white;
 }
@@ -767,7 +790,7 @@ tr:hover {
   align-items: center;
   padding: 12px;
   background-color: #f8f9fa;
-  border-radius: 4px;
+  border-radius: 0;
   margin-bottom: 8px;
 }
 
@@ -793,7 +816,7 @@ tr:hover {
   background-color: #dc3545;
   color: white;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 10px;
   font-weight: 600;
   margin-left: 8px;
@@ -815,7 +838,7 @@ tr:hover {
 
 .modal {
   background-color: white;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 24px;
   max-width: 500px;
   width: 90%;
@@ -937,7 +960,7 @@ tr:hover {
 
 .sor-seal {
   background: #1a2332;
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0;
   margin-bottom: 24px;
   border: 1px solid #2d3a4d;
@@ -957,7 +980,7 @@ tr:hover {
   background: #2563eb;
   color: #ffffff;
   padding: 5px 10px;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;

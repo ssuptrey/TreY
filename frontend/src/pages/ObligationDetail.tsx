@@ -449,26 +449,28 @@ const ObligationDetail: React.FC = () => {
             </div>
             <div className="od-decisions">
               {auditTimeline.filter(log => 
-                ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action)
+                ['OWNER_ASSIGN', 'OWNER_REASSIGN', 'SLA_EXTEND', 'OBLIGATION_STATUS_CHANGE', 'STATUS_CHANGED', 'EVIDENCE_UPLOAD', 'EVIDENCE_LATE_UPLOAD', 'ESCALATION_TRIGGERED', 'OBLIGATION_CREATE'].includes(log.action)
               ).length > 0 ? (
                 auditTimeline
-                  .filter(log => ['OWNER_REASSIGNED', 'SLA_EXTENDED', 'STATUS_CHANGED', 'EVIDENCE_UPLOADED', 'ESCALATION_TRIGGERED'].includes(log.action))
+                  .filter(log => ['OWNER_ASSIGN', 'OWNER_REASSIGN', 'SLA_EXTEND', 'OBLIGATION_STATUS_CHANGE', 'STATUS_CHANGED', 'EVIDENCE_UPLOAD', 'EVIDENCE_LATE_UPLOAD', 'ESCALATION_TRIGGERED', 'OBLIGATION_CREATE'].includes(log.action))
                   .slice(0, 5)
                   .map((log) => (
                     <div key={log.id} className="od-decision">
                       <div className="od-decision__icon">
-                        {log.action === 'OWNER_REASSIGNED' && '\u2192'}
-                        {log.action === 'SLA_EXTENDED' && '\u27F3'}
-                        {log.action === 'EVIDENCE_UPLOADED' && '\u2191'}
-                        {log.action === 'STATUS_CHANGED' && '\u25CF'}
+                        {log.action === 'OBLIGATION_CREATE' && '\u25CF'}
+                        {(log.action === 'OWNER_ASSIGN' || log.action === 'OWNER_REASSIGN') && '\u2192'}
+                        {log.action === 'SLA_EXTEND' && '\u27F3'}
+                        {(log.action === 'EVIDENCE_UPLOAD' || log.action === 'EVIDENCE_LATE_UPLOAD') && '\u2191'}
+                        {(log.action === 'OBLIGATION_STATUS_CHANGE' || log.action === 'STATUS_CHANGED') && '\u25CF'}
                         {log.action === 'ESCALATION_TRIGGERED' && '!'}
                       </div>
                       <div className="od-decision__body">
                         <div className="od-decision__action">
-                          {log.action === 'OWNER_REASSIGNED' && `Reassigned to ${log.new_value?.new_owner || 'new owner'}`}
-                          {log.action === 'SLA_EXTENDED' && `SLA extended to ${log.new_value?.new_due_date || 'new date'}`}
-                          {log.action === 'EVIDENCE_UPLOADED' && `Evidence uploaded: ${log.new_value?.file_name || 'document'}`}
-                          {log.action === 'STATUS_CHANGED' && `Status changed to ${log.new_value?.status || 'updated'}`}
+                          {log.action === 'OBLIGATION_CREATE' && 'Obligation created'}
+                          {(log.action === 'OWNER_ASSIGN' || log.action === 'OWNER_REASSIGN') && `Assigned to ${users?.find(u => u.id === log.new_value?.user_id)?.name || log.new_value?.new_owner || 'new owner'}`}
+                          {log.action === 'SLA_EXTEND' && `SLA extended to ${log.new_value?.new_due_date || 'new date'}`}
+                          {(log.action === 'EVIDENCE_UPLOAD' || log.action === 'EVIDENCE_LATE_UPLOAD') && `Evidence uploaded: ${log.new_value?.fileName || log.new_value?.file_name || 'document'}`}
+                          {(log.action === 'OBLIGATION_STATUS_CHANGE' || log.action === 'STATUS_CHANGED') && `Status changed to ${log.new_value?.status || 'updated'}`}
                           {log.action === 'ESCALATION_TRIGGERED' && `Escalated to ${log.new_value?.level || 'L2'}`}
                         </div>
                         <div className="od-decision__meta">

@@ -151,7 +151,7 @@ const CreateObligation: React.FC = () => {
         </div>
       )}
 
-      <div className="card">
+      <div className="dense-panel">
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>
